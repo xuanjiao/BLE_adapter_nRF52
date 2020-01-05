@@ -8,9 +8,11 @@
 #include "mbed.h"
 #include "ble/BLE.h"
 #include "acd52832_bsp.h"
+#include "SEGGER_RTT.h"
 #include "GapAdvertisingData.h"
 #include "AckService.h"
 #include "nrf52_uart.h"
+#include "LDR/LDR.h"
 
 #define SLEEP_TIME      (1.0)           /* Sleep time in seconds */
 #define WAKE_UP_TIME    (100)          /* Awake time in ms */
@@ -22,6 +24,7 @@
 #define GO_TO_SLEEP     (0)             /* Sleep flag: 0 -> Device will not go to sleep, 1 -> Will go to sleep mode */
 #define PRINT           (0)
 
+#define printf(...)  SEGGER_RTT_printf(0,__VA_ARGS__)
 
 #if PRINT
     #define TX          (p25)
@@ -34,6 +37,7 @@
 bool SLEEP = true;
 
 ACKService<4> *ackServicePtr;
+LDR ldr(ADC_LIGHT);
 static const uint16_t uuid16_list[] = {ACKService<4>::ACK_SERVICE_UUID};
 
 DigitalOut advLED(p22);         // Red
@@ -127,9 +131,13 @@ void bleInitComplete(BLE::InitializationCompleteCallbackContext *params){
 void updateData(BLE *ble){    
     static uint8_t simple_counter = 0;
     
+    // Value normalized to a byte [0,255]
+    uint8_t uLight = ldr.getLight();
+    printf("light = %x\n",uLight);
+
     MSD[2] = simple_counter++;
     adv_data = ble->getAdvertisingData();
-    adv_data.updateData(adv_data.MANUFACTURER_SPECIFIC_DATA, MSD, MSD_SIZE);
+    adv_data.updateData(adv_data.MANUFACTURER_SPECIFIC_DATA, &uLight, sizeof(uint8_t));
     ble->setAdvertisingData(adv_data);
 }
 
