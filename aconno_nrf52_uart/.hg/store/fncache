@@ -1,0 +1,4 @@
+data/nrf52_uart.cpp.orig.i
+data/adc52832_common.lib.i
+data/nrf52_uart.cpp.i
+data/nrf52_uart.h.i

@@ -1,0 +1,104 @@
+[
+    {
+        "module": "[fill]", 
+        "size": {
+            ".data": 7, 
+            ".bss": 63, 
+            ".text": 222
+        }
+    }, 
+    {
+        "module": "[lib]\\c.a", 
+        "size": {
+            ".data": 2472, 
+            ".bss": 56, 
+            ".text": 16207
+        }
+    }, 
+    {
+        "module": "[lib]\\gcc.a", 
+        "size": {
+            ".data": 0, 
+            ".bss": 0, 
+            ".text": 3144
+        }
+    }, 
+    {
+        "module": "[lib]\\misc", 
+        "size": {
+            ".data": 12, 
+            ".bss": 28, 
+            ".text": 252
+        }
+    }, 
+    {
+        "module": "[lib]\\stdc++.a", 
+        "size": {
+            ".data": 0, 
+            ".bss": 0, 
+            ".text": 1
+        }
+    }, 
+    {
+        "module": "main.o", 
+        "size": {
+            ".data": 24, 
+            ".bss": 48, 
+            ".text": 2119
+        }
+    }, 
+    {
+        "module": "mbed-os\\drivers", 
+        "size": {
+            ".data": 0, 
+            ".bss": 0, 
+            ".text": 482
+        }
+    }, 
+    {
+        "module": "mbed-os\\features", 
+        "size": {
+            ".data": 9, 
+            ".bss": 784, 
+            ".text": 23008
+        }
+    }, 
+    {
+        "module": "mbed-os\\hal", 
+        "size": {
+            ".data": 8, 
+            ".bss": 130, 
+            ".text": 1401
+        }
+    }, 
+    {
+        "module": "mbed-os\\platform", 
+        "size": {
+            ".data": 4, 
+            ".bss": 13, 
+            ".text": 637
+        }
+    }, 
+    {
+        "module": "mbed-os\\rtos", 
+        "size": {
+            ".data": 168, 
+            ".bss": 6125, 
+            ".text": 10671
+        }
+    }, 
+    {
+        "module": "mbed-os\\targets", 
+        "size": {
+            ".data": 140, 
+            ".bss": 2197, 
+            ".text": 23248
+        }
+    }, 
+    {
+        "summary": {
+            "static_ram": 12288, 
+            "total_flash": 84236
+        }
+    }
+]

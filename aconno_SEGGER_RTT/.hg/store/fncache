@@ -1,0 +1,5 @@
+data/SEGGER_RTT.c.i
+data/SEGGER_RTT_printf.c.i
+data/SEGGER_RTT.h.i
+data/SEGGER_RTT_Syscalls_GCC.c.i
+data/SEGGER_RTT_Conf.h.i

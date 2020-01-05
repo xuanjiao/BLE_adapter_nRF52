@@ -1,0 +1,5 @@
+data/AckService.h.i
+data/mbed-os.lib.i
+data/aconno_nrf52_uart.lib.i
+data/aconno_bsp.lib.i
+data/main.cpp.i
