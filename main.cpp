@@ -19,7 +19,7 @@
 #define MSD_SIZE        (19)             /* Manufacturer Specific Data lenght (in B) */
 #define ADV_INTERVAL    (20)          /* Advertising interval in ms */
 #define TX_POWER        (4)             /* TX power (in dB) */
-#define DEVICE_NAME     "aconno"
+#define DEVICE_NAME     "ACD"
 
 #define GO_TO_SLEEP     (0)             /* Sleep flag: 0 -> Device will not go to sleep, 1 -> Will go to sleep mode */
 #define PRINT           (0)

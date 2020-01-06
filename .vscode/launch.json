@@ -46,7 +46,7 @@
             "windows": {
                 "preLaunchTask": "mbed.exe",
                 "MIMode": "gdb",
-                "MIDebuggerPath": "C:\\Program Files (x86)\\GNU Tools ARM Embedded\\6 2017-q2-update\binarm-none-eabi-gdb.exe",
+                "MIDebuggerPath": "C:\\Program Files (x86)\\GNU Tools ARM Embedded\\6 2017-q2-update\\bin\\arm-none-eabi-gdb.exe",
                 "debugServerPath": "C:\\Python27\\Scripts\\pyocd-gdbserver.exe",
                 "setupCommands": [
                     { "text": "-environment-cd ${workspaceRoot}\\BUILD\\NRF52_DK\\GCC_ARM-RELEASE" },
