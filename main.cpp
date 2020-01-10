@@ -10,11 +10,12 @@
 #include "acd52832_bsp.h"
 #include "SEGGER_RTT.h"
 #include "GapAdvertisingData.h"
+#include "CurrentTimeService.h"
 #include "AckService.h"
 #include "nrf52_uart.h"
 #include "LDR/LDR.h"
 
-#define SLEEP_TIME      (1.0)           /* Sleep time in seconds */
+#define SLEEP_TIME      (5.0)           /* Sleep time in seconds */
 #define WAKE_UP_TIME    (100)          /* Awake time in ms */
 #define MSD_SIZE        (19)             /* Manufacturer Specific Data lenght (in B) */
 #define ADV_INTERVAL    (20)          /* Advertising interval in ms */
@@ -115,6 +116,17 @@ void bleInitComplete(BLE::InitializationCompleteCallbackContext *params){
     ackServicePtr = new ACKService<4>(ble, init_values);
     ackServicePtr->updateMacAddress(myMacAddress);    // Update MAC address
     
+    // add current date time service
+    BLE_DateTime initialDateTime = {
+        .year = 2020,
+        .month = 12,
+        .day = 01,
+        .hours = 20,
+        .minutes = 30,
+        .seconds = 50
+    };
+    CurrentTimeService currentTimeService(ble,initialDateTime);
+
     ble.gap().onDisconnection(disconnectionCallback);
     ble.gap().onConnection(onConnectionCallback);         // -->> Uncomment these two lines for shush-shush 
     ble.gattServer().onDataWritten(onDataWrittenCallback);
@@ -141,9 +153,22 @@ void updateData(BLE *ble){
     ble->setAdvertisingData(adv_data);
 }
 
+void RTCTimeSetup(){
+    set_time(1256729737);  // Set RTC time to Wed, 28 Oct 2009 11:35:37
+}
+
+void showCurrentTimeString(){
+    time_t seconds = time(NULL);
+
+    char buffer[40];
+    strftime(buffer, 40, "%a,%d %m %Y.%H:%M:%S\r", localtime(&seconds));
+    printf("Time as a custom formatted string = %s", buffer);
+}
 
 int main(void){
-    
+    RTCTimeSetup();
+    showCurrentTimeString();
+
     BLE &ble = BLE::Instance();
     
     advLED = 1;         // Red
