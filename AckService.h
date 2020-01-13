@@ -19,6 +19,7 @@ class ACKService{
             ble.gattServer().write(MAC.getValueHandle(), MacAddress, MAC_ADDR_SIZE_B);
         }
     private:
+        const static uint16_t ACK_CHARA_UUID = 0xA001;
         BLEDevice &ble;
         // Create new characteristic
         WriteOnlyArrayGattCharacteristic<uint8_t, dataSize> ACK;
