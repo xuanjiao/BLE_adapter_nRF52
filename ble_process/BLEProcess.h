@@ -1,3 +1,6 @@
+#ifndef BLE_PROCESS_H
+#define BLE_PROCESS_H
+
 #include "events/EventQueue.h"
 #include "platform/Callback.h"
 #include "platform/NonCopyable.h"
@@ -9,14 +12,11 @@
 #include "ble/FunctionPointerWithContext.h"
 #include "ble/GattClient.h"
 
-#define DEVICE_NAME     "ACD52"
-
-
-
-
-
 #include "SEGGER_RTT.h"
+
 #define printf(...)  SEGGER_RTT_printf(0,__VA_ARGS__)
+
+#define DEVICE_NAME     "ACD52"
 
 class BLEProcess : private mbed::NonCopyable<BLEProcess>
 {
@@ -168,3 +168,5 @@ public:
 
 
 };
+
+#endif
