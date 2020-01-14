@@ -3,19 +3,17 @@
 #include<ble_process/LDRService.h>
 #include<acd52832_bsp.h>
 
-#define UPDATE_DATA_INTERVAL            2000
+#define MEASURMENT_INTERAL            2000
 #define printf(...)  SEGGER_RTT_printf(0,__VA_ARGS__)
 
 // Set up the button S1 to trigger an erase
 
 class MeasurementProcess{
     private:
-
         mbed::Callback<void(uint8_t)> _post_update_cb;
         LDR &_ldr;
         
    public:
-
         MeasurementProcess(LDR &ldr):
         _ldr(ldr){}
 
@@ -23,10 +21,10 @@ class MeasurementProcess{
             if(cb){
                 printf("register callback\r\n");
                 _post_update_cb = cb;
-            }
-            
+            }       
         }
 
+        // get current light value from light sensor and give it to ble module
         void measureLight(){
             uint8_t light = _ldr.getLight();
             printf("give light value %x\r\n",light);
@@ -43,24 +41,27 @@ class MeasurementProcess{
             BLEProcess ble_process(event_queue,ble_interface);
             LDRService ldr_service;
 
-            // Register GattClientProcess::init in the ble_process; this function will
+            // Register LDRService::start in the ble_process; this function will
             // be called once the ble_interface is initialized.
             ble_process.on_init(
                 mbed::callback(&ldr_service,&LDRService::start)
             );
 
+            // bind the event queue to the ble interface, initialize the interface
+            // and start advertising
+            ble_process.start();
+
             MeasurementProcess measurement_process(ldr);
+
+            // Register LDRService::update_sensor_value in the measurement_process, 
+            // this function will be called after measuring light value
             measurement_process.registerCallback(
                 mbed::callback(&ldr_service,&LDRService::update_sensor_value)
             );
             
-            
-            int id = event_queue.call_every(2000,&measurement_process,&MeasurementProcess::measureLight);
-            printf("call every 1000ms, id = %d\r\n",id);
+            event_queue.call_every(MEASURMENT_INTERAL,&measurement_process,&MeasurementProcess::measureLight);
 
-            // bind the event queue to the ble interface, initialize the interface
-            // and start advertising
-            ble_process.start();
+
 
             
 

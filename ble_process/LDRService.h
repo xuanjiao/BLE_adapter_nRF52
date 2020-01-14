@@ -12,18 +12,16 @@
 class LDRService{
     
     private:
-    //const static uint16_t UUID_LDR_SERVICE = 0xA000;
-    const static uint16_t UUID_LDR_CHARACTERISTIC = 0xA001;
-    uint8_t _valueBytes[BLE_LDR_VALUE_SIZE];
-    GattServer *_gattServer;
-    GattCharacteristic _LDRgattCharacteristic;
+        const static uint16_t UUID_LDR_CHARACTERISTIC = 0xA001;
+        GattServer *_gattServer;
+        GattCharacteristic _LDRgattCharacteristic;
 
     public:
         LDRService():
         _LDRgattCharacteristic(
                                     //UUID_LDR_SERVICE,
                                     /* UUID */              UUID_LDR_CHARACTERISTIC,
-                                    /* Initial value */     _valueBytes,
+                                    /* Initial value */     0,
                                     /* Value size */        BLE_LDR_VALUE_SIZE,
                                      /* Value capacity */   BLE_LDR_VALUE_SIZE,
                                     /* Properties */        GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ
@@ -49,27 +47,18 @@ class LDRService{
             ble_error_t error = _gattServer->addService(LDRService);
             if(error){
                 printf("Error %u during adding LDR service.\r\n",error);
-               // printf("sizeof char = %d",sizeof(characteristics));
                 return;
-            }
-           // _event_queue->call_every(1000 /* ms */, &Demo,Demo::update_sensor_value,ble_interface);
-           
-        
-            
+            }      
         }
+
+        // Update light value in ldr gatt characteristic.
         void update_sensor_value(uint8_t light){
             printf("got light = %x\r\n",light);
+            _gattServer->write( 
+                _LDRgattCharacteristic.getValueHandle(),
+                &light,
+                sizeof(light));
+
         }
-
-        // void update_sensor_value(LDR &ldr){
-        //     printf("light = %x\r\n",ldr.getLight());
-        // }
-
-        void write_value_to_buffer(uint8_t value){
-            _valueBytes[0] = value;
-        }
-        
-
-
 
 };
