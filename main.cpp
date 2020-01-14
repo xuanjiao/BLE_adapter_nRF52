@@ -8,19 +8,17 @@
 
 // Set up the button S1 to trigger an erase
 
-class Demo{
+class MeasurementProcess{
     private:
-      //  BLE _ble_interface;
-        events::EventQueue _event_queue;
-        //mbed::Callback<void(LDR&)> _post_update_cb;
+
         mbed::Callback<void(uint8_t)> _post_update_cb;
-        
+        LDR &_ldr;
         
    public:
 
-        Demo(){
-        
-        }
+        MeasurementProcess(LDR &ldr):
+        _ldr(ldr){}
+
         void registerCallback(mbed::Callback<void(uint8_t)> cb){           
             if(cb){
                 printf("register callback\r\n");
@@ -29,10 +27,8 @@ class Demo{
             
         }
 
-
         void measureLight(){
-            LDR ldr(ADC_LIGHT);
-            uint8_t light = ldr.getLight();
+            uint8_t light = _ldr.getLight();
             printf("give light value %x\r\n",light);
             _post_update_cb(light);          
         }
@@ -40,6 +36,8 @@ class Demo{
         
         int main(){
             BLE &ble_interface = BLE::Instance();
+            LDR ldr(ADC_LIGHT);
+
             events::EventQueue event_queue;
 
             BLEProcess ble_process(event_queue,ble_interface);
@@ -51,13 +49,13 @@ class Demo{
                 mbed::callback(&ldr_service,&LDRService::start)
             );
 
-            Demo demo;
-            demo.registerCallback(
+            MeasurementProcess measurement_process(ldr);
+            measurement_process.registerCallback(
                 mbed::callback(&ldr_service,&LDRService::update_sensor_value)
             );
             
             
-            int id = event_queue.call_every(2000,&demo,&Demo::measureLight);
+            int id = event_queue.call_every(2000,&measurement_process,&MeasurementProcess::measureLight);
             printf("call every 1000ms, id = %d\r\n",id);
 
             // bind the event queue to the ble interface, initialize the interface
