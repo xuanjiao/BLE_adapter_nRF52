@@ -36,7 +36,7 @@ public:
         stop();
     }
 
-    // Subscription to the ble interface initialization event.
+    // Subscripton_inition to the ble interface initialization event.
     void on_init(mbed::Callback<void(BLE&, events::EventQueue&)> cb)
     {
         _post_init_cb = cb;
@@ -63,6 +63,7 @@ public:
             printf("Error: %u returned by BLE::init.\r\n", error);
             return false;
         }
+      
         return true;
     }
 
@@ -100,6 +101,8 @@ public:
         start_advertising();
 
         if (_post_init_cb) {
+
+            // here we run LDRService::start(BLE &ble_interface, events::EventQueue &event_queue)
             _post_init_cb(_ble_interface, _event_queue);
         }
 

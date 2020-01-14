@@ -6,7 +6,8 @@
 
 #define printf(...)  SEGGER_RTT_printf(0,__VA_ARGS__)
 
-#define BLE_LDR_VALUE_SIZE  4
+#define BLE_LDR_VALUE_SIZE  1
+#define NUM_OF_CHAR         1
 
 class LDRService{
     
@@ -38,21 +39,31 @@ class LDRService{
         void start(BLE &ble_interface, events::EventQueue &event_queue){
 
             // Register service.
-            printf("start adding LDR service.");
+            printf("Adding LDR service.\r\n");
             _gattServer = &ble_interface.gattServer();
             GattCharacteristic *characteristics[] = {&_LDRgattCharacteristic};
             GattService LDRService(GattService::UUID_ENVIRONMENTAL_SERVICE,
                                     characteristics,
-                                    sizeof(characteristics));
+                                    NUM_OF_CHAR);
 
             ble_error_t error = _gattServer->addService(LDRService);
             if(error){
                 printf("Error %u during adding LDR service.\r\n",error);
+               // printf("sizeof char = %d",sizeof(characteristics));
+                return;
             }
+           // _event_queue->call_every(1000 /* ms */, &Demo,Demo::update_sensor_value,ble_interface);
+           
+        
+            
+        }
+        void update_sensor_value(uint8_t light){
+            printf("got light = %x\r\n",light);
         }
 
-
-
+        // void update_sensor_value(LDR &ldr){
+        //     printf("light = %x\r\n",ldr.getLight());
+        // }
 
         void write_value_to_buffer(uint8_t value){
             _valueBytes[0] = value;

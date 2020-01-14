@@ -12,31 +12,35 @@ class Demo{
     private:
       //  BLE _ble_interface;
         events::EventQueue _event_queue;
-        LDR _ldr;
+        //mbed::Callback<void(LDR&)> _post_update_cb;
+        mbed::Callback<void(uint8_t)> _post_update_cb;
+        
+        
    public:
 
-        Demo(LDR &ldr, events::EventQueue &event_queue):
-            _ldr(ldr),
-            _event_queue(event_queue)
-         //   _ble_interface(ble_interface)
-        {
-            _event_queue.call_every(UPDATE_DATA_INTERVAL,this,&Demo::update_sensor_value);
+        Demo(){
+        
+        }
+        void registerCallback(mbed::Callback<void(uint8_t)> cb){           
+            if(cb){
+                printf("register callback\r\n");
+                _post_update_cb = cb;
+            }
+            
         }
 
-        void update_sensor_value(){
-              // Value normalized to a byte [0,255]
-            uint8_t uLight = _ldr.getLight();
-            printf("light = %x\r\n",uLight);
-        }
 
+        void measureLight(){
+            LDR ldr(ADC_LIGHT);
+            uint8_t light = ldr.getLight();
+            printf("give light value %x\r\n",light);
+            _post_update_cb(light);          
+        }
 };
+        
         int main(){
             BLE &ble_interface = BLE::Instance();
             events::EventQueue event_queue;
-            LDR ldr(ADC_LIGHT);
-            
-            //Demo demo(ble_interface,ldr,event_queue);
-            Demo demo(ldr,event_queue);
 
             BLEProcess ble_process(event_queue,ble_interface);
             LDRService ldr_service;
@@ -47,12 +51,23 @@ class Demo{
                 mbed::callback(&ldr_service,&LDRService::start)
             );
 
+            Demo demo;
+            demo.registerCallback(
+                mbed::callback(&ldr_service,&LDRService::update_sensor_value)
+            );
+            
+            
+            int id = event_queue.call_every(2000,&demo,&Demo::measureLight);
+            printf("call every 1000ms, id = %d\r\n",id);
+
             // bind the event queue to the ble interface, initialize the interface
             // and start advertising
             ble_process.start();
 
+            
+
             // Process the event queue.
-            event_queue.dispatch_forever();
+            event_queue.dispatch();
 
             return 0;
         }
