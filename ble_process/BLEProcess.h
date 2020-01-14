@@ -23,7 +23,7 @@ class BLEProcess : private mbed::NonCopyable<BLEProcess>
 private:
     events::EventQueue &_event_queue;
     BLE &_ble_interface;
-    mbed::Callback<void(BLE&, events::EventQueue&)> _post_init_cb;
+    mbed::Callback<void(BLE&)> _post_init_cb;
 public:
     BLEProcess(events::EventQueue &event_queue, BLE &ble_interface):
         _event_queue(event_queue),
@@ -37,7 +37,7 @@ public:
     }
 
     // Subscripton_inition to the ble interface initialization event.
-    void on_init(mbed::Callback<void(BLE&, events::EventQueue&)> cb)
+    void on_init(mbed::Callback<void(BLE&)> cb)
     {
         _post_init_cb = cb;
     }
@@ -102,8 +102,8 @@ public:
 
         if (_post_init_cb) {
 
-            // here we run LDRService::start(BLE &ble_interface, events::EventQueue &event_queue)
-            _post_init_cb(_ble_interface, _event_queue);
+            // Here run LDRService::start(BLE &ble_interface).
+            _post_init_cb(_ble_interface);
         }
 
     }

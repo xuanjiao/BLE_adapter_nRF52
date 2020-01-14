@@ -24,10 +24,12 @@ class MeasurementProcess{
             }       
         }
 
-        // get current light value from light sensor and give it to ble module
+        // Get current light value from light sensor and give it to ble module
         void measureLight(){
             uint8_t light = _ldr.getLight();
             printf("give light value %x\r\n",light);
+
+            // Here run LDRService::update_sensor_value(uint8_t light).
             _post_update_cb(light);          
         }
 };

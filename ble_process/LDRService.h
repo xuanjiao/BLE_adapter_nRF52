@@ -34,7 +34,7 @@ class LDRService{
 
         }
 
-        void start(BLE &ble_interface, events::EventQueue &event_queue){
+        void start(BLE &ble_interface){
 
             // Register service.
             printf("Adding LDR service.\r\n");
