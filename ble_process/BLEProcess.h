@@ -156,10 +156,19 @@ public:
             strlen(DEVICE_NAME)
         );
 
+        // UUID's broadcast in advertising packet
+        uint16_t uuid16_list[] = {0xFFFF};
+        advertising_data.addData(
+            GapAdvertisingData::COMPLETE_LIST_16BIT_SERVICE_IDS,
+            (uint8_t *)uuid16_list, 
+            sizeof(uuid16_list)
+        );
+
         return advertising_data;
     }
 
     static GapAdvertisingParams make_advertising_params(){
+        
         return GapAdvertisingParams(
             /* type */     GapAdvertisingParams::ADV_CONNECTABLE_UNDIRECTED,
             /* interval */ GapAdvertisingParams::MSEC_TO_ADVERTISEMENT_DURATION_UNITS(500),
