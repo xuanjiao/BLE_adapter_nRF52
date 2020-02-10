@@ -3,7 +3,8 @@
  */
 
 #include "LDR.h"
-#include "utilities.h"
+
+ #define REF_VOLTAGE_V (3.3)
 
 #define ADC_RESOLUTION_BITS 10 /* NOTE: May be 10 or 11 */
 #define ADC_VOLTAGE_RESOLUTION_V REF_VOLTAGE_V/(1<<ADC_RESOLUTION_BITS)

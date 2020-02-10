@@ -3,10 +3,7 @@
         {
             "includePath": [
                 "${workspaceRoot}\\*",
-                "${workspaceRoot}\\aconno_bsp\\*",
-                "${workspaceRoot}\\aconno_nrf52_uart\\*",
-                "${workspaceRoot}\\aconno_nrf52_uart\\adc52832_common\\*",
-                "${workspaceRoot}\\aconno_SEGGER_RTT\\*",
+                "${workspaceRoot}\\RTT\\*",
                 "${workspaceRoot}\\ble_process\\*",
                 "${workspaceRoot}\\LDR\\*",
                 "${workspaceRoot}\\mbed-os\\*",
@@ -249,10 +246,7 @@
         {
             "includePath": [
                 "${workspaceRoot}/*",
-                "${workspaceRoot}/aconno_bsp/*",
-                "${workspaceRoot}/aconno_nrf52_uart/*",
-                "${workspaceRoot}/aconno_nrf52_uart/adc52832_common/*",
-                "${workspaceRoot}/aconno_SEGGER_RTT/*",
+                "${workspaceRoot}/RTT/*",
                 "${workspaceRoot}/ble_process/*",
                 "${workspaceRoot}/LDR/*",
                 "${workspaceRoot}/mbed-os/*",
@@ -499,10 +493,7 @@
         {
             "includePath": [
                 "${workspaceRoot}/*",
-                "${workspaceRoot}/aconno_bsp/*",
-                "${workspaceRoot}/aconno_nrf52_uart/*",
-                "${workspaceRoot}/aconno_nrf52_uart/adc52832_common/*",
-                "${workspaceRoot}/aconno_SEGGER_RTT/*",
+                "${workspaceRoot}/RTT/*",
                 "${workspaceRoot}/ble_process/*",
                 "${workspaceRoot}/LDR/*",
                 "${workspaceRoot}/mbed-os/*",

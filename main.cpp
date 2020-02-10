@@ -1,11 +1,12 @@
-#include<LDR.h>
+#include"LDR.h"
 #include<ble_process/BLEProcess.h>
 #include<ble_process/LDRService.h>
-#include<acd52832_bsp.h>
+//#include<acd52832_bsp.h>
 
 #define MEASURMENT_INTERAL            2000
 #define printf(...)  SEGGER_RTT_printf(0,__VA_ARGS__)
 
+#define ADC_LIGHT                                   (p29)
 // Set up the button S1 to trigger an erase
 
 class MeasurementProcess{
