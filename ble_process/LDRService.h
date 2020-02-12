@@ -4,8 +4,6 @@
 #include <GattService.h>
 #include "SEGGER_RTT.h"
 
-#define printf(...)  SEGGER_RTT_printf(0,__VA_ARGS__)
-
 #define BLE_LDR_VALUE_SIZE  1
 #define NUM_OF_CHAR         1
 

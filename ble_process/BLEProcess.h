@@ -11,10 +11,7 @@
 #include "ble/FunctionPointerWithContext.h"
 #include "ble/GattClient.h"     
 
-
 #include "SEGGER_RTT.h"
-
-#define printf(...)  SEGGER_RTT_printf(0,__VA_ARGS__)
 
 #define DEVICE_NAME     "ACD52"
 

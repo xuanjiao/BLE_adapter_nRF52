@@ -2,6 +2,8 @@
     
     #include "BLEProcess.h"
 
+    #define printf(...)  SEGGER_RTT_printf(0,__VA_ARGS__)
+    
     BLEProcess::~BLEProcess()
     {
         stop();
