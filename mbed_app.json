@@ -1,0 +1,18 @@
+{
+    "config":{
+    },
+
+    "target_overrides": {
+        "*": {
+            
+        },
+        "NRF52_DK": {
+            "target.features_add": ["STORAGE"],
+            "target.components_add": ["SD"],
+            "sd.SPI_CS":"p22",
+            "sd.SPI_MOSI":"p23",
+            "sd.SPI_MISO":"p24",
+            "sd.SPI_CLK":"p25"  
+        }
+    }
+}
