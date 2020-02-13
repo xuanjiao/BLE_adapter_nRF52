@@ -122,8 +122,8 @@
         // add device name
         advertising_data.addData(
             GapAdvertisingData::COMPLETE_LOCAL_NAME, 
-            (uint8_t *)DEVICE_NAME, 
-            strlen(DEVICE_NAME)
+            (uint8_t *)MBED_CONF_APP_BLE_DEVICE_NAME, 
+            strlen(MBED_CONF_APP_BLE_DEVICE_NAME)
         );
 
         // UUID's broadcast in advertising packet

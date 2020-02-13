@@ -13,8 +13,6 @@
 
 #include "SEGGER_RTT.h"
 
-#define DEVICE_NAME     "ACD52"
-
 class BLEProcess : private mbed::NonCopyable<BLEProcess>
 {
 private:
