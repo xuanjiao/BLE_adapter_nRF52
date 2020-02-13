@@ -1,23 +1,11 @@
 #include "LDR.h"
 #include <ble_process/BLEProcess.h>
 #include <ble_process/LDRService.h>
-#include "sdcard.h"
-//#include<acd52832_bsp.h>
+#include "sdcardProcess.h"
 
-#define MEASURMENT_INTERAL            2000
+
 #define printf(...)  SEGGER_RTT_printf(0,__VA_ARGS__)
 
-
-#define PIN_LIGHT                                   (p29)
-// Set up the button S1 to trigger an erase
-/*
-#define PIN_DIGITAL_LIGHT                           (p28)
-
-#define SD_SPI_CS                                   (p22)
-#define SD_SPI_MOSI                                 (p23)
-#define SD_SPI_MISO                                 (p24)
-#define SD_SPI_CLK                                  (p25)
-*/
 class MeasurementProcess{
     private:
         mbed::Callback<void(uint8_t)> _post_update_cb;
@@ -47,12 +35,12 @@ class MeasurementProcess{
         int main(){
             BLE &ble_interface = BLE::Instance();
             LDR ldr(PIN_LIGHT);
-            /*
-            SDBlockDevice sd(SD_SPI_MOSI, 
-                                SD_SPI_MISO, 
-                                SD_SPI_CLK, 
-                                SD_SPI_CS);
-            */
+            SDcardProcess sd;
+            sd.init_sd_card();
+            sd.display_directory();
+            sd.write_sensor_value_and_time(15,"2020");
+            sd.close_sd_card();
+
             events::EventQueue event_queue;
 
             BLEProcess ble_process(event_queue,ble_interface);
