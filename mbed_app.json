@@ -1,14 +1,33 @@
 {
     "config":{
+        "log_file_name": {
+            "marco_name":"LOG_FILE_NAME",
+            "value":"\"light_log.txt\""
+        },
+        "file_system_name": {
+            "marco_name":"FILE_SYSTEM_NAME",
+            "value":"\"fs\""
+        },
+        "ble_device_name": {
+            "marco_name":"BLE_DEVICE_NAME",
+            "value":"\"ACD52\""
+        },
+        "measurement_interval": {
+            "marco_name":"MEASURMENT_INTERAL",
+            "value":"2000"
+        },
+        "pin_light": {
+            "marco_name":"PIN_LIGHT",
+            "value":"p29"
+        }
     },
 
     "target_overrides": {
         "*": {
-            
+            "target.features_add": ["STORAGE"],
+            "target.components_add": ["SD"]
         },
         "NRF52_DK": {
-            "target.features_add": ["STORAGE"],
-            "target.components_add": ["SD"],
             "sd.SPI_CS":"p22",
             "sd.SPI_MOSI":"p23",
             "sd.SPI_MISO":"p24",
