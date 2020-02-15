@@ -6,8 +6,9 @@
 SDcardProcess::SDcardProcess()
 {
     _bd = BlockDevice::get_default_instance();
-    _fs = new FATFileSystem(MBED_CONF_APP_FILE_SYSTEM_NAME,_bd);
-    sprintf(path,"/%s/%s",MBED_CONF_APP_FILE_SYSTEM_NAME,MBED_CONF_APP_LOG_FILE_NAME);
+    _fs = new FATFileSystem(MBED_CONF_APP_FILE_SYSTEM_NAME);
+    //_irq = new InterruptIn(MBED_CONF_APP_PIN_ERASE_SD_CARD);
+    sprintf(file_path,"/%s/%s",MBED_CONF_APP_FILE_SYSTEM_NAME,MBED_CONF_APP_LOG_FILE_NAME);
 }
 
 void SDcardProcess::print_sd_card_info(){
@@ -18,72 +19,82 @@ void SDcardProcess::print_sd_card_info(){
 }
 
 bool SDcardProcess::erase_sd_card(){
-    int ret;
-    if( ( ret = _bd->erase(0,_bd->get_erase_size())) != 0){
-        printf("Error %d during eraseiing block\n");
+    printf("Initializing the sd card...");
+
+    if(_bd->init()!=0)
+    {
+        printf("Failed.\nError %d during initializing sd card: %s",-errno,strerror(errno));
+    }
+    printf("OK.\nErasing SD card...");
+
+    if( _bd->erase(0,_bd->get_erase_size()) != 0)
+    {
+        printf("Failed.\nError %d during erasing block\n: %s",-errno,strerror(errno));
         return false;
     }
-        return true;
+    printf("OK.\nDeinitializing the block device...");
+
+    if( _bd->erase(0,_bd->deinit()) != 0)
+    {
+        printf("Failed.\nError %d during deinitializing block device\n: %s",-errno,strerror(errno));
+        return false;
+    }
+    printf("OK.\n");
+
+    return true;
 }
         
 bool SDcardProcess::init_sd_card(){
-           
-            int ret;
-            /*
-            if( (ret = _bd->init())!=0){
-                printf("Error %d during init sd card\n");
-                return false;
-            }
+    int ret;
+    
+	// Try to mount the filesystem
+	printf("Mounting the filesystem... ");
+	fflush(stdout);
+	int err = _fs->mount(_bd);
+	printf("%s\n", (err ? "Fail :(" : "OK"));
+	if (err) {
+		// Reformat if we can't mount the filesystem
+		// this should only happen on the first boot
+		printf("No filesystem found, formatting... ");
+		fflush(stdout);
+		err = _fs->reformat(_bd);
+		printf("%s\n", (err ? "Fail :(" : "OK"));
+		if (err) {
+			error("error: %s (%d)\n", strerror(-err), err);
+		}
+	}
 
-            // Set the frequency
-            if( (ret = _sd.frequency(frequency)) != 0 ){
-                printf("Error %d during setting frequency.\n");
-            } 
-            */
-
-            // Mount the filesystem
+    /*
     printf("Mounting the filesystem...");
     fflush(stdout);
-    if((ret = _fs->mount(_bd))!=0){
-        printf("Error %d during mounting the filesystem\n");
+    if((ret = (_fs->mount(_bd)))!=0){
+        printf("Failed.\nError %d during mounting the filesystem: %s, ret = %d\n",-errno,strerror(errno),ret);
         printf("No system found, formating...");
         fflush(stdout);
 
-        if((ret = _fs->reformat(_bd))!=0){
-            printf("Error %d during reformat the sd card.\n");
+        // Reformating system
+        if( _fs->reformat(_bd)!=0){
+            printf("Failed.\nError %d during reformat the sd card: %s.\n",-errno,strerror(errno));
             return false;
          }
+        printf("OK.\n");
     }
     
     printf("OK.\n");
-
+    */
     return true;
 
 }
 
 bool SDcardProcess::write_sensor_value_and_time(int value,char* time){
-    int ret,n;
+    int n;
     FILE *fp;
     char buffer[512];
     
     // Construct a line of data: value time
     n = sprintf(buffer,"%d %s",value,time);
 
-            /*
-            if( (ret = _sd.program(buffer,0,sizeof(buffer)))!=0){
-                printf("Error %d during write data block to sd card.\n");
-                return false;
-            }else{
-                printf("Wrote %d byte data to sd card.\n");
-            }
-            */
-    printf("Opening \"%s\"...",path);
-    fflush(stdout);
-
-    if( (fp = fopen(path,"w+"))==NULL)
-    {
-        printf("Failed\n");
-        printf("Error %d during open file:  %s.\n",-errno,strerror(errno));
+    if( (fp = open_file(file_path,"w+"))==NULL){
         return false;
     }
 
@@ -100,15 +111,15 @@ bool SDcardProcess::write_sensor_value_and_time(int value,char* time){
     
     printf("OK. wrote %d bytes\n",n);
 
+    close_file(fp);
     return true;
 }
 
 bool SDcardProcess::close_sd_card(){
-    int ret;
     
     printf("Unmounting... ");
 
-    if( (ret = _fs->unmount())<0)
+    if(_fs->unmount()<0)
     {
         printf("Failed\nError %d during unmount: %s.\n",-errno,strerror(errno));
         return false;
@@ -120,20 +131,22 @@ bool SDcardProcess::close_sd_card(){
 }
 
 bool SDcardProcess::read_log_file(){
-    int ret;
     FILE* fp;
-    //sprintf(path,"/fs/%s",LOG_FILE_NAME);
 
-
-   // printf("read data in log file.. %s\n",path);
-
-    fp = open_file(path);
-
-    if(!fp){
+    // Check whether file path is empty
+    if(strlen(file_path)==0){
+        printf("File path \'%s\' is invalid",file_path);
         return false;
     }
 
+    if( (fp = open_file(file_path,"r")) == NULL){
+        return false;
+    }
+
+    // Get char until reach the end-of-file indicator.
     while (!feof(fp)) {
+
+        // Get the char point by internal file pointer, pointer then point to next char.
         int c = fgetc(fp);
         printf("%c", c);
     }
@@ -142,58 +155,66 @@ bool SDcardProcess::read_log_file(){
     return true;
 }
 
-void SDcardProcess::display_directory()
+bool SDcardProcess::display_root_directory()
 {
-    int ret;
+    DIR *d;
+    char root_path[PATH_LEN_MAX]="";
+    
+    // Construct root directory eg./fs/
+    sprintf(root_path,"/%s/",MBED_CONF_APP_FILE_SYSTEM_NAME);
+
     // Display the root directory
 	printf("Opening the root directory... ");
 	fflush(stdout);
-	DIR* d = opendir("/fs/");
-	printf("%s\n", (!d ? "Fail :(" : "OK"));
-	if (!d) {
-		error("error: %s (%d)\n", strerror(errno), -errno);
-	}
+
+	if ((d = opendir(root_path))==NULL) {
+		printf("Failed.\nError %d during open directory: %s\n",  -errno,strerror(errno));
+        return false;
+	}else{printf("OK.\n");}
 
 	printf("root directory:\n");
-	while (true) {
-		struct dirent* e = readdir(d);
-		if (!e) {
-			break;
-		}
 
-		printf("    %s\n", e->d_name);
+    struct dirent e;
+
+    // Read until reach the end of directory.
+	while (d->read(&e)) {
+        // display file name and file type
+		printf("    %s   %s\n", e.d_name,e.d_type);
 	}
 
 	printf("Closing the root directory... ");
 	fflush(stdout);
-	ret = closedir(d);
-	printf("%s\n", (ret < 0 ? "Fail :(" : "OK"));
-	if (ret < 0) {
-		printf("error: %s (%d)\n", strerror(errno), -errno);
+
+	if ( closedir(d) < 0) {
+		printf("Failed.\nError %d: %s\n", -errno, strerror(errno));
+        return false;
 	}
+    printf("OK.\n");
+    return true;
 }
 
 bool SDcardProcess::close_file(FILE *fp){
-    int ret;
+
     // Close the file which also flushes any cached writes
     printf("Closing \"/fs/light_log.txt\"... ");
     
-    if( (ret = fclose(fp))<0)
+    if( fclose(fp)<0)
     {
         printf("Failed\nError %d during closing file: %s.\n",-errno,strerror(errno));
         return false;
     }
 
     printf("OK.\n");
+    return true;
 }
 
-FILE* SDcardProcess::open_file(char* path)
+FILE* SDcardProcess::open_file(const char *file_path,const char *mode)
 {
     static FILE* fp;
 
-    printf("Opening file %s...",path);
-    if(( fp = fopen(path,"r"))==NULL){
-        printf("Failed. Error %d: %s\n",-errno,strerror(errno));
+    printf("Opening file \"%s\"...",file_path);
+    if(( fp = fopen(file_path,mode))==NULL){
+        printf("Failed.\nError %d: %s\n",-errno,strerror(errno));
         return NULL;
     }
 
