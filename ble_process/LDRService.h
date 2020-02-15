@@ -35,6 +35,6 @@ class LDRService{
         void start(BLE &ble_interface);
 
         // Update light value in ldr gatt characteristic.
-        void update_sensor_value(uint8_t light);
+        void update_sensor_value(uint8_t light, char* time);
 
 };

@@ -1,0 +1,13 @@
+{
+  "builds": {
+    "NRF52_DK-GCC_ARM": {
+      "binary_type": "bootable", 
+      "tests": {}, 
+      "toolchain": "GCC_ARM", 
+      "base_path": "BUILD/tests/NRF52_DK/GCC_ARM", 
+      "baud_rate": 9600, 
+      "platform": "NRF52_DK", 
+      "test_apps": {}
+    }
+  }
+}

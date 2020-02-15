@@ -8,9 +8,12 @@ using namespace utest::v1;
 // This is how a test case looks
 static control_t simple_test(const size_t call_count) {
     /* test content here */
-    TEST_ASSERT_EQUAL(4, 2 * 2);
-
+    TEST_ASSERT(true);
     return CaseNext;
+}
+
+void test_success(){
+    TEST_ASSERT(true);
 }
 
 utest::v1::status_t greentea_setup(const size_t number_of_cases) {
@@ -22,7 +25,8 @@ utest::v1::status_t greentea_setup(const size_t number_of_cases) {
 
 // List of test cases in this file
 Case cases[] = {
-    Case("simple test", simple_test)
+    //Case("simple test", simple_test)
+    Case("Testing success test",test_success)
 };
 
 Specification specification(greentea_setup, cases);

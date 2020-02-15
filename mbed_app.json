@@ -19,13 +19,18 @@
         "pin_light": {
             "marco_name":"PIN_LIGHT",
             "value":"p29"
+        },
+        "pin_erase_sd_card":{
+            "marco_name":"PIN_ERASE_SD_CARAD",
+            "value":"BUTTON1"
         }
     },
 
     "target_overrides": {
         "*": {
             "target.features_add": ["STORAGE"],
-            "target.components_add": ["SD"]
+            "target.components_add": ["SD"],
+            "sd.INIT_FREQUENCY": 350000
         },
         "NRF52_DK": {
             "sd.SPI_CS":"p22",
