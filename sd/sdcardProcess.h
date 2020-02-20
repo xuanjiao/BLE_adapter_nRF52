@@ -6,6 +6,19 @@
 #include "FATFileSystem.h"
 #include "SEGGER_RTT.h"
 #include "events/EventQueue.h"
+#include "sensor_type.h"
+#include <vector>
+
+using namespace std;
+
+
+// log file stores in file system        
+typedef struct log_file
+{
+    sensor_type type;
+    int index;
+    char path[50];
+}log_file;
 
 class SDcardProcess{
     typedef SDcardProcess Self;
@@ -24,10 +37,10 @@ class SDcardProcess{
             delete _bd;
             delete _irq;
         }
-
+        
+        void add_log_file(sensor_type type,int index);
+        
         // Pint sd card info: size, read size, program size and eraze size.
-
-        // Size
         void print_sd_card_info();
 
         bool remove_all_log_file();
@@ -36,7 +49,7 @@ class SDcardProcess{
         bool init_sd_card();
 
         // Write value and timestamp to log file
-        void write_sensor_value_and_time(uint8_t value,char *time);
+        void write_sensor_value_and_time(sensor_type type,uint8_t value,char* time);
         
         // Display all data in log file
         // log file in in root directory of sd card.
@@ -49,7 +62,11 @@ class SDcardProcess{
         // Display file name and file type in root system.
         bool display_root_directory();
 
-            private:
+    private:
+        FILE* open_file(const char *file_path, const char *mode);
+
+        void set_current_log_file(log_file &file);
+        
         events::EventQueue *_event_queue;
 
         BlockDevice *_bd;
@@ -60,12 +77,15 @@ class SDcardProcess{
         
         const static int PATH_LEN_MAX = 50;
         
-        char file_path[PATH_LEN_MAX];
+        const static int FILE_NUM_MAX = 5;
+
         
         InterruptIn *_irq;    
         // Open file and return a file pointer.
         
-        FILE* open_file(const char *file_path, const char *mode);
+     
+        vector<log_file> _log_files;
 
+        log_file _my_log;
 
 };

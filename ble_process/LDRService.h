@@ -3,6 +3,7 @@
 #include <GattCharacteristic.h>
 #include <GattService.h>
 #include "SEGGER_RTT.h"
+#include "sensor_type.h"
 
 #define BLE_LDR_VALUE_SIZE  1
 #define NUM_OF_CHAR         1
@@ -35,6 +36,6 @@ class LDRService{
         void start(BLE &ble_interface);
 
         // Update light value in ldr gatt characteristic.
-        void update_sensor_value(uint8_t light, char* time);
+        void update_sensor_value(sensor_type type,uint8_t light, char* time);
 
 };

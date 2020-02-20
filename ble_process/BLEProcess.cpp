@@ -61,7 +61,7 @@
         Gap &gap = _ble_interface.gap();
         ble_error_t error = gap.setAdvertisingPayload(make_advertising_data());
         if(error){
-            printf("Error %u during gap.setAdvertisingPayload");
+            printf("Error %u during gap.setAdvertisingPayload",error);
         }
 
         gap.setAdvertisingParams(make_advertising_params());

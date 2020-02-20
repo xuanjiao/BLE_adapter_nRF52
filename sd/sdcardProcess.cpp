@@ -24,10 +24,50 @@ SDcardProcess::SDcardProcess(events::EventQueue &event_queue)
         event_queue.event(this,&Self::remove_all_log_file)
     );
 
-    sprintf(file_path,"/%s/%s",MBED_CONF_APP_FILE_SYSTEM_NAME,MBED_CONF_APP_LOG_FILE_NAME);
 }
 
-void SDcardProcess::print_sd_card_info(){
+void SDcardProcess::add_log_file(sensor_type type,int index)
+{
+    log_file file;
+    file.type = type;
+    file.index = index; 
+
+    switch (type)
+    {
+        case light:
+            sprintf(file.path,"/%s/light_list_%d.txt",MBED_CONF_APP_FILE_SYSTEM_NAME,index);
+            break;
+        case accumulate:
+            sprintf(file.path,"/%s/accumulate_list_%d.txt",MBED_CONF_APP_FILE_SYSTEM_NAME,index);
+            break;
+        default:
+            sprintf(file.path,"/%s/unknown_list_%d.txt",MBED_CONF_APP_FILE_SYSTEM_NAME,index);
+            break;
+    }  
+
+    _log_files.push_back(file);
+    
+    printf("Add log file %s...",file.path); 
+    
+    FILE* fp = open_file(file.path,"a+");
+
+    if(!fp){
+        printf("Error %u during add log file %s: %s\n",-errno,strerror(errno));   
+        return;
+    }
+
+    close_file(fp);
+
+    set_current_log_file(file);
+
+    printf("OK.\n");
+
+    display_root_directory();
+}
+
+
+void SDcardProcess::print_sd_card_info()
+{
     printf("sd size: %llu\n",         _bd->size());
     printf("sd read size: %llu\n",    _bd->get_read_size());
     printf("sd program size: %llu\n", _bd->get_program_size());
@@ -37,14 +77,18 @@ void SDcardProcess::print_sd_card_info(){
 bool SDcardProcess::remove_all_log_file(){
 
     display_root_directory();
-     
-    printf("Removing log file %s\n",file_path);
-    if( remove(file_path)!= 0)
+
+    for (std::vector<log_file>::iterator it =  _log_files.begin() ; it !=  _log_files.end(); ++it)
     {
-        printf("Error %d during deleting file %s \n: %s",-errno,file_path,strerror(errno));
-        return false;
+        printf("Removing log file %s\n",(*it).path);
+        if( remove((*it).path)!= 0)
+        {
+            printf("Failed.\n Error %d\n: %s",-errno,strerror(errno));
+            return false;
+        }
+        printf("OK.\n");
     }
-    printf("OK.\n");
+    // printf("Removing log file %s\n",_my_log.path);
 
     display_root_directory();
 
@@ -71,10 +115,13 @@ bool SDcardProcess::init_sd_card(){
 		}
 	}
     return true;
-
 }
 
-void SDcardProcess::write_sensor_value_and_time(uint8_t value,char* time){
+void SDcardProcess::set_current_log_file(log_file &file){
+    _my_log = file;
+}
+
+void SDcardProcess::write_sensor_value_and_time(sensor_type type,uint8_t value,char* time){
     int n;
     FILE *fp;
     char buffer[512];
@@ -82,7 +129,8 @@ void SDcardProcess::write_sensor_value_and_time(uint8_t value,char* time){
     // Construct a line of data: value time
     n = sprintf(buffer,"%x %s\r\n",value,time);
 
-    if( (fp = open_file(file_path,"a+"))==NULL){
+
+    if( (fp = open_file(_my_log.path,"a+"))==NULL){
         return;
     }
 
@@ -119,12 +167,12 @@ bool SDcardProcess::read_log_file(){
     FILE* fp;
 
     // Check whether file path is empty
-    if(strlen(file_path)==0){
-        printf("File path \'%s\' is invalid",file_path);
+    if(strlen(_my_log.path)==0){
+        printf("File path \'%s\' is invalid",_my_log.path);
         return false;
     }
 
-    if( (fp = open_file(file_path,"r")) == NULL){
+    if( (fp = open_file(_my_log.path,"r")) == NULL){
         return false;
     }
 
@@ -196,7 +244,7 @@ FILE* SDcardProcess::open_file(const char *file_path,const char *mode)
 {
     static FILE* fp;
     if(( fp = fopen(file_path,mode))==NULL){
-        printf("Error %d during open file %s : %s\n",-errno,file_path,strerror(errno));
+        printf("Error %d during open file %s : %s\n",-errno,_my_log.path,strerror(errno));
         return NULL;
     }
     return fp;
