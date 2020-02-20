@@ -17,7 +17,7 @@
             "message": 5
         }
     },
-    "args": ["compile", "--profile=debug", "-v","-t", "GCC_ARM", "-m", "NRF52_DK"],
+    "args": ["compile", "--profile=debug", "-v","-t", "GCC_ARM", "-m", "NRF52_DK","-f"],
     "linux": {
         "command": "mbed"
     },

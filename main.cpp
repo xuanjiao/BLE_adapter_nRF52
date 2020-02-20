@@ -54,14 +54,14 @@ class MeasurementProcess{
         
         int main(){
             BLE &ble_interface = BLE::Instance();
+            
+            events::EventQueue event_queue;
+
             LDR ldr(MBED_CONF_APP_PIN_LIGHT);
-            SDcardProcess sd;
+         
+            SDcardProcess sd(event_queue);
             sd.init_sd_card();
 
-            sd.write_sensor_value_and_time(30,"2020-01-20");
-            sd.close_sd_card();
-
-            events::EventQueue event_queue;
 
             BLEProcess ble_process(event_queue,ble_interface);
             LDRService ldr_service;
@@ -72,9 +72,6 @@ class MeasurementProcess{
                 mbed::callback(&ldr_service,&LDRService::start)
             );
 
-            // bind the event queue to the ble interface, initialize the interface
-            // and start advertising
-            ble_process.start();
 
             MeasurementProcess measurement_process(ldr);
 
@@ -84,10 +81,14 @@ class MeasurementProcess{
                 mbed::callback(&ldr_service,&LDRService::update_sensor_value)
             );
 
-            measurement_process.registerCallback(
-                mbed::callback(&ldr_service,&LDRService::update_sensor_value)
+             measurement_process.registerCallback(
+                mbed::callback(&sd,&SDcardProcess::write_sensor_value_and_time)
             );
-            
+
+            // bind the event queue to the ble interface, initialize the interface
+            // and start advertising
+            ble_process.start();
+      
             event_queue.call_every(MBED_CONF_APP_MEASUREMENT_INTERVAL,
                                     &measurement_process,
                                     &MeasurementProcess::measureLight);
