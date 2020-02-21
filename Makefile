@@ -46,13 +46,11 @@ PROJECT := ACD52832_Beacon_basic_example
 ###############################################################################
 # Objects and Paths
 
-OBJECTS += ./aconno_SEGGER_RTT/SEGGER_RTT.o
-OBJECTS += ./aconno_SEGGER_RTT/SEGGER_RTT_Syscalls_GCC.o
-OBJECTS += ./aconno_SEGGER_RTT/SEGGER_RTT_printf.o
-OBJECTS += ./aconno_nrf52_uart/adc52832_common/print.o
-OBJECTS += ./aconno_nrf52_uart/adc52832_common/utilities.o
-OBJECTS += ./aconno_nrf52_uart/nrf52_uart.o
-OBJECTS += ./main.o
+OBJECTS += ./source/ble_process/BLEProcess.o
+OBJECTS += ./source/measurement/MeasurementProcess.o
+OBJECTS += ./sd/sdcardProcess.o
+OBJECTS += ./source/ble_server/EnviromentSensingServer.o
+OBJECTS += ./source/main.o
 OBJECTS += ./mbed-os/drivers/AnalogIn.o
 OBJECTS += ./mbed-os/drivers/BusIn.o
 OBJECTS += ./mbed-os/drivers/BusInOut.o

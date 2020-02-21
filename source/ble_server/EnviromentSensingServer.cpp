@@ -37,7 +37,7 @@ void EnviromentSensingServer::update_sensor_value(sensor_type type,uint8_t value
     
     switch (type)
     {
-    case sensor_type::light :
+    case light :
         printf("got light = %x, time %s\r\n",value,time);
         _gattServer->write( 
             _light_char.getValueHandle(),
@@ -45,7 +45,7 @@ void EnviromentSensingServer::update_sensor_value(sensor_type type,uint8_t value
             sizeof(light)
         );
         break;
-    case sensor_type::accumulate :
+    case accumulate :
         printf("got accumulate = %x, time %s\r\n",value,time);
     default:
         break;

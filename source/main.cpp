@@ -3,6 +3,7 @@
 #include "EnviromentSensingServer.h"
 #include "sdcardProcess.h"
 #include "sensor_type.h"
+#include <stdint.h>
 
 #define printf(...)  SEGGER_RTT_printf(0,__VA_ARGS__)
 
@@ -38,7 +39,7 @@ class MeasurementProcess{
             
             time_t _current_time = time(NULL);
             
-            sensor_type type = sensor_type::light;
+            sensor_type type = light;
 
             char buffer[50];
             // "H"hour(24h)|"M"minute(00-59)|"S"second(00-60)|"d"day(01-31)| "m"month |"Y"years| "u"day of week(1-7) | 
@@ -64,7 +65,7 @@ class MeasurementProcess{
          
             SDcardProcess sd(event_queue);
             sd.init_sd_card();
-            sd.add_log_file(sensor_type::light,1);
+            sd.add_log_file(light,1);
 
             BLEProcess ble_process(event_queue,ble_interface);
             EnviromentSensingServer ldr_service;
