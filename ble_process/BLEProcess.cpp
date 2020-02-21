@@ -10,9 +10,10 @@
     }
 
         // Subscripton_inition to the ble interface initialization event.
-    void BLEProcess::on_init(mbed::Callback<void(BLE&)> cb)
-    { 
-        _post_init_cb = cb;
+    void BLEProcess::on_init(mbed::Callback<void(BLE&,events::EventQueue&)> cb)
+    {        
+        _post_init_cbs[_count_cb] = cb;
+        _count_cb++;
     }
 
     
@@ -71,10 +72,13 @@
 
         start_advertising();
 
-        if (_post_init_cb) {
+        if (_count_cb) {
+            for(int i = 0;i <_count_cb;i++){
+            
+                // Here run init func from gatt client and server.
+                _post_init_cbs[i](_ble_interface,_event_queue);
 
-            // Here run LDRService::start(BLE &ble_interface).
-            _post_init_cb(_ble_interface);
+            }
         }
     }
 

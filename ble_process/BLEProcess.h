@@ -10,28 +10,33 @@
 #include "ble/GapAdvertisingData.h"
 #include "ble/FunctionPointerWithContext.h"
 #include "ble/GattClient.h"     
-
+#include "events/EventQueue.h"
 #include "SEGGER_RTT.h"
 
 class BLEProcess : private mbed::NonCopyable<BLEProcess>
 {
 private:
     events::EventQueue &_event_queue;
+
     BLE &_ble_interface;
-    mbed::Callback<void(BLE&)> _post_init_cb;
+
+    const static int CALLBACK_NUM_MAX = 3;
+
+    mbed::Callback<void(BLE&,events::EventQueue&)> _post_init_cbs[CALLBACK_NUM_MAX];
+
+    int _count_cb;
+    
 public:
     BLEProcess(events::EventQueue &event_queue, BLE &ble_interface):
         _event_queue(event_queue),
-        _ble_interface(ble_interface),
-        _post_init_cb(){
-    }
+        _ble_interface(ble_interface){}
 
     ~BLEProcess();
     
     
 
     // Subscripton_inition to the ble interface initialization event.
-    void on_init(mbed::Callback<void(BLE&)> cb);
+    void on_init(mbed::Callback<void(BLE&,events::EventQueue&)> cb);
 
     // Initialize the ble interface, configure it and start advertising.
     bool start();

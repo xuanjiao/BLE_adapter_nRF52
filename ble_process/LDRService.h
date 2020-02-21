@@ -2,22 +2,31 @@
 #include "ble/BLE.h"
 #include <GattCharacteristic.h>
 #include <GattService.h>
+#include "events/EventQueue.h"
 #include "SEGGER_RTT.h"
 #include "sensor_type.h"
 
-#define BLE_LDR_VALUE_SIZE  1
-#define NUM_OF_CHAR         1
 
 class LDRService{
     
     private:
         const static uint16_t UUID_LDR_CHARACTERISTIC = 0xA001;
+
+        const static int BLE_LDR_VALUE_SIZE = 1;
+
+        const static int NUM_OF_CHAR = 1;
+
         GattServer *_gattServer;
+
         GattCharacteristic _LDRgattCharacteristic;
+
+        BLE *_ble_interface;
+
+        events::EventQueue *_event_queue;
 
     public:
         LDRService():
-        _LDRgattCharacteristic(
+            _LDRgattCharacteristic(
                                     //UUID_LDR_SERVICE,
                                     /* UUID */              UUID_LDR_CHARACTERISTIC,
                                     /* Initial value */     0,
@@ -33,7 +42,7 @@ class LDRService{
 
         }
 
-        void start(BLE &ble_interface);
+        void start(BLE &ble_interface,events::EventQueue& event_queue);
 
         // Update light value in ldr gatt characteristic.
         void update_sensor_value(sensor_type type,uint8_t light, char* time);

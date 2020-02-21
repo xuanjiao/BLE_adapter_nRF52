@@ -3,11 +3,17 @@
 
 #define printf(...)  SEGGER_RTT_printf(0,__VA_ARGS__)
 
-void LDRService::start(BLE &ble_interface){
+void LDRService::start(BLE &ble_interface,events::EventQueue& event_queue)
+{
 
     // Register service.
     printf("Adding LDR service.\r\n");
-    _gattServer = &ble_interface.gattServer();
+
+    _ble_interface = &ble_interface;
+    _event_queue = &event_queue;
+
+    _gattServer = &_ble_interface->gattServer();
+
     GattCharacteristic *characteristics[] = {&_LDRgattCharacteristic};
     GattService LDRService(GattService::UUID_ENVIRONMENTAL_SERVICE,
                                     characteristics,
