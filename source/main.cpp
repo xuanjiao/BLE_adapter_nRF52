@@ -1,8 +1,7 @@
 #include "LDR.h"
-#include <ble_process/BLEProcess.h>
-#include <ble_process/LDRService.h>
+#include "BLEProcess.h"
+#include "EnviromentSensingServer.h"
 #include "sdcardProcess.h"
-
 #include "sensor_type.h"
 
 #define printf(...)  SEGGER_RTT_printf(0,__VA_ARGS__)
@@ -47,7 +46,7 @@ class MeasurementProcess{
             
             printf("give light value %x, time %s\r\n",value,buffer);
 
-            // Here run LDRService::update_sensor_value(uint8_t light).
+            // Here run EnviromentSensingServer::update_sensor_value(uint8_t light).
             for(int i = 0; i < _callback_num;i++)
             {
                 _post_update_value_cb[i](type,value,buffer);  
@@ -68,21 +67,21 @@ class MeasurementProcess{
             sd.add_log_file(sensor_type::light,1);
 
             BLEProcess ble_process(event_queue,ble_interface);
-            LDRService ldr_service;
+            EnviromentSensingServer ldr_service;
 
-            // Register LDRService::start in the ble_process; this function will
+            // Register EnviromentSensingServer::start in the ble_process; this function will
             // be called once the ble_interface is initialized.
             ble_process.on_init(
-                mbed::callback(&ldr_service,&LDRService::start)
+                mbed::callback(&ldr_service,&EnviromentSensingServer::start)
             );
 
 
             MeasurementProcess measurement_process(ldr);
 
-            // Register LDRService::update_sensor_value in the measurement_process, 
+            // Register EnviromentSensingServer::update_sensor_value in the measurement_process, 
             // this function will be called after measuring light value
             measurement_process.registerCallback(
-                mbed::callback(&ldr_service,&LDRService::update_sensor_value)
+                mbed::callback(&ldr_service,&EnviromentSensingServer::update_sensor_value)
             );
 
              measurement_process.registerCallback(

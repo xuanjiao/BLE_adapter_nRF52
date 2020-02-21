@@ -44,7 +44,7 @@ class MeasurementProcess{
             uint8_t light = 15;
             printf("give light value %x\r\n",light);
 
-            // Here run LDRService::update_sensor_value(uint8_t light).
+            // Here run EnviromentSensingServer::update_sensor_value(uint8_t light).
             _post_update_cb(light);          
         }
 };
