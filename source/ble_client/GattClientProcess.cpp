@@ -24,7 +24,7 @@ void GattClientProcess::init(BLE &ble_interface, events::EventQueue &event_queue
 
 void GattClientProcess::when_char_data_read(const GattReadCallbackParams* params)
 {
-    printf("read char data from handle %d\n",params->handle);
+    printf("read %d bytes char data from handle %d\n",params->len,params->handle);
 
     // Check read status
     if(params->status != BLE_ERROR_NONE){
@@ -38,7 +38,37 @@ void GattClientProcess::when_char_data_read(const GattReadCallbackParams* params
     }
     printf("\n");
 
+    typedef struct date_time{
+        uint16_t year;
+        uint8_t month;
+        uint8_t day;
+        uint8_t hour;
+        uint8_t minute;
+        uint8_t second;
+        uint8_t day_of_week;
+    }DateTime;
+    
+    
+    uint8_t data[params->len];
+    memcpy(data,params->data,params->len);
 
+    DateTime time;
+    time.year           =  *((uint16_t*)data);
+    time.month          = data[2];
+    time.day            = data[3];
+    time.hour           = data[4];
+    time.minute         = data[5];
+    time.second         = data[6];
+    time.day_of_week    = data[7];
+
+    printf("%d-%d-%d %d:%d:%d %d\n",
+            time.year,
+            time.month,
+            time.day,
+            time.hour,
+            time.minute,
+            time.second,
+            time.day_of_week);
 }
 
 // Called when connection attempt ends or an advertising device has been connected.
@@ -59,8 +89,8 @@ void GattClientProcess::start()
         _connection_handle,
         as_cb(&Self::when_service_discovered),
         as_cb(&Self::when_characteristic_discovered),
-        UUID::ShortUUIDBytes_t(GattService::UUID_CURRENT_TIME_SERVICE),
-        UUID::ShortUUIDBytes_t(GattCharacteristic::UUID_CURRENT_TIME_CHAR)
+       UUID::ShortUUIDBytes_t(GattService::UUID_CURRENT_TIME_SERVICE),
+       UUID::ShortUUIDBytes_t(GattCharacteristic::UUID_CURRENT_TIME_CHAR)
     );
 
     if(error){
