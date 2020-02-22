@@ -3,6 +3,7 @@
 #include "EnviromentSensingServer.h"
 #include "sdcardProcess.h"
 #include "sensor_type.h"
+#include "GattClientProcess.h"
 #include <stdint.h>
 
 #define printf(...)  SEGGER_RTT_printf(0,__VA_ARGS__)
@@ -62,27 +63,39 @@ class MeasurementProcess{
             events::EventQueue event_queue;
 
             LDR ldr(MBED_CONF_APP_PIN_LIGHT);
-         
+
             SDcardProcess sd(event_queue);
             sd.init_sd_card();
             sd.add_log_file(light,1);
 
-            BLEProcess ble_process(event_queue,ble_interface);
-            EnviromentSensingServer ldr_service;
 
-            // Register EnviromentSensingServer::start in the ble_process; this function will
-            // be called once the ble_interface is initialized.
+            BLEProcess ble_process(event_queue,ble_interface);
+            EnviromentSensingServer server;
+            GattClientProcess client;
+
+            // Register callbacks to the ble init event; this function will
+            // be called once the ble interface is initialized.
             ble_process.on_init(
-                mbed::callback(&ldr_service,&EnviromentSensingServer::start)
+                mbed::callback(&server,&EnviromentSensingServer::start)
             );
 
-
+            ble_process.on_init(
+                mbed::callback(&client,&GattClientProcess::init)
+            );
+            
+            // Register callbacks in the ble onConnectionComplete event; this function will
+            // be called once connected.
+       
+            ble_process.on_connection_complete(
+                mbed::callback(&client,&GattClientProcess::start)
+            );
+        
             MeasurementProcess measurement_process(ldr);
 
             // Register EnviromentSensingServer::update_sensor_value in the measurement_process, 
             // this function will be called after measuring light value
             measurement_process.registerCallback(
-                mbed::callback(&ldr_service,&EnviromentSensingServer::update_sensor_value)
+                mbed::callback(&server,&EnviromentSensingServer::update_sensor_value)
             );
 
              measurement_process.registerCallback(

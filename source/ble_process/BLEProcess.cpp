@@ -12,8 +12,13 @@
         // Subscripton_inition to the ble interface initialization event.
     void BLEProcess::on_init(mbed::Callback<void(BLE&,events::EventQueue&)> cb)
     {        
-        _post_init_cbs[_count_cb] = cb;
-        _count_cb++;
+        _post_init_cbs[_count_init_cb] = cb;
+        _count_init_cb++;
+    }
+
+    void BLEProcess::on_connection_complete(mbed::Callback<void()> cb)
+    {
+        _post_connection_compete_cb = cb;
     }
 
     
@@ -72,8 +77,8 @@
 
         start_advertising();
 
-        if (_count_cb) {
-            for(int i = 0;i <_count_cb;i++){
+        if (_count_init_cb) {
+            for(int i = 0;i <_count_init_cb;i++){
             
                 // Here run init func from gatt client and server.
                 _post_init_cbs[i](_ble_interface,_event_queue);
@@ -86,6 +91,11 @@
      void BLEProcess::when_connection(const Gap::ConnectionCallbackParams_t *connection_event)
      {
          printf("Connected. \r\n");
+       
+         if(_post_connection_compete_cb){
+             _post_connection_compete_cb();
+         }
+         
      }
 
     // Stop the gatt client process when the device is disconnected then restart

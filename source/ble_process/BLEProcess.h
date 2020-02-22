@@ -24,7 +24,9 @@ private:
 
     mbed::Callback<void(BLE&,events::EventQueue&)> _post_init_cbs[CALLBACK_NUM_MAX];
 
-    int _count_cb;
+    mbed::Callback<void()> _post_connection_compete_cb;
+    
+    int _count_init_cb;
     
 public:
     BLEProcess(events::EventQueue &event_queue, BLE &ble_interface):
@@ -35,8 +37,11 @@ public:
     
     
 
-    // Subscripton_inition to the ble interface initialization event.
+    // Subscription to the ble interface initialization event.
     void on_init(mbed::Callback<void(BLE&,events::EventQueue&)> cb);
+
+    // Subscription to the ble interface connection complete event.
+    void on_connection_complete(mbed::Callback<void()> cb);
 
     // Initialize the ble interface, configure it and start advertising.
     bool start();
