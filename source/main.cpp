@@ -4,9 +4,11 @@
 #include "sdcardProcess.h"
 #include "sensor_type.h"
 #include "GattClientProcess.h"
+//#include "MeasurementProcess.h"
 #include <stdint.h>
 
 #define printf(...)  SEGGER_RTT_printf(0,__VA_ARGS__)
+
 
 class MeasurementProcess{
     private:
@@ -56,13 +58,16 @@ class MeasurementProcess{
                     
         }
 };
+
         
         int main(){
+            printf("Main function start.\n");
             BLE &ble_interface = BLE::Instance();
             
             events::EventQueue event_queue;
 
-            LDR ldr(MBED_CONF_APP_PIN_LIGHT);
+           LDR ldr(MBED_CONF_APP_PIN_LIGHT);
+
 
             SDcardProcess sd(event_queue);
             sd.init_sd_card();
@@ -73,8 +78,8 @@ class MeasurementProcess{
             EnviromentSensingServer server;
             GattClientProcess client;
 
-            // Register callbacks to the ble init event; this function will
-            // be called once the ble interface is initialized.
+            // // Register callbacks to the ble init event; this function will
+            // // be called once the ble interface is initialized.
             ble_process.on_init(
                 mbed::callback(&server,&EnviromentSensingServer::start)
             );
@@ -91,9 +96,12 @@ class MeasurementProcess{
             );
         
             MeasurementProcess measurement_process(ldr);
-
+           //MeasurementProcess measurement_process;
+           // measurement_process.init();
+            // measurement_process.read()
             // Register EnviromentSensingServer::update_sensor_value in the measurement_process, 
             // this function will be called after measuring light value
+        
             measurement_process.registerCallback(
                 mbed::callback(&server,&EnviromentSensingServer::update_sensor_value)
             );
@@ -101,10 +109,10 @@ class MeasurementProcess{
              measurement_process.registerCallback(
                 mbed::callback(&sd,&SDcardProcess::write_sensor_value_and_time)
             );
-
+        
             // bind the event queue to the ble interface, initialize the interface
             // and start advertising
-            ble_process.start();
+           ble_process.start();
       
             event_queue.call_every(MBED_CONF_APP_MEASUREMENT_INTERVAL,
                                     &measurement_process,

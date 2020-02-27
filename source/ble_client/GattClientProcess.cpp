@@ -1,4 +1,5 @@
 #include "GattClientProcess.h"
+#include "mbed_rtc_time.h"
 
 #define printf(...)  SEGGER_RTT_printf(0,__VA_ARGS__)
 
@@ -24,13 +25,18 @@ void GattClientProcess::init(BLE &ble_interface, events::EventQueue &event_queue
 
 void GattClientProcess::when_char_data_read(const GattReadCallbackParams* params)
 {
-    printf("read %d bytes char data from handle %d\n",params->len,params->handle);
+    
 
     // Check read status
     if(params->status != BLE_ERROR_NONE){
-        printf("Status %x during read data. Error code %x.\n",params->status,params->error_code);
+        printf("Status %x during read data from handle %d. Error code %x.\n",
+                params->status,
+                params->handle,
+                params->error_code);
         return;
     }
+
+    printf("read %d bytes %d\n",params->len);
 
     // read data from callback parameter
     for(int i = 0; i < params->len;i++){
@@ -69,6 +75,19 @@ void GattClientProcess::when_char_data_read(const GattReadCallbackParams* params
             time.minute,
             time.second,
             time.day_of_week);
+
+    
+    struct tm when = {0};
+    when.tm_hour = time.hour;
+    when.tm_min = time.minute;
+    when.tm_sec = time.second;
+    when.tm_wday = time.day_of_week;
+    when.tm_year = time.year;
+    when.tm_mon = time.month;
+    when.tm_mday = time.day;
+
+    time_t convert = mktime(&when);  // t is now your desired time_t
+    set_time(convert);
 }
 
 // Called when connection attempt ends or an advertising device has been connected.

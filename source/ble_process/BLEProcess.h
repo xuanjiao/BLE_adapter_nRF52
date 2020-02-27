@@ -11,6 +11,7 @@
 #include "ble/FunctionPointerWithContext.h"
 #include "ble/GattClient.h"     
 #include "events/EventQueue.h"
+#include 
 #include "SEGGER_RTT.h"
 
 class BLEProcess : private mbed::NonCopyable<BLEProcess>

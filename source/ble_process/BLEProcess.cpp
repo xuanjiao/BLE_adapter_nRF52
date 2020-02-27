@@ -65,17 +65,25 @@
         printf("BLE instance initialized.\r\n");
 
         Gap &gap = _ble_interface.gap();
+        //gap.createSync()
+        printf("support periodic advertisng? %d\n",ret);
         ble_error_t error = gap.setAdvertisingPayload(make_advertising_data());
         if(error){
             printf("Error %u during gap.setAdvertisingPayload",error);
         }
 
         gap.setAdvertisingParams(make_advertising_params());
-
         gap.onConnection(this, &BLEProcess::when_connection);
         gap.onDisconnection(this, &BLEProcess::when_disconnection);
 
+        //hier set scan parameters
+        
+
+        /* start scanning and attach a callback that will handle advertisements
+         * and scan requests responses */
+
         start_advertising();
+
 
         if (_count_init_cb) {
             for(int i = 0;i <_count_init_cb;i++){
@@ -140,13 +148,31 @@
             strlen(MBED_CONF_APP_BLE_DEVICE_NAME)
         );
 
+        advertising_data.addField(
+
+        );
+
         // UUID's broadcast in advertising packet
-        uint16_t uuid16_list[] = {0xFFFF};
+        uint16_t uuid16_list[] = {GattService::UUID_ENVIRONMENTAL_SERVICE};
         advertising_data.addData(
             GapAdvertisingData::COMPLETE_LIST_16BIT_SERVICE_IDS,
             (uint8_t *)uuid16_list, 
             sizeof(uuid16_list)
         );
+        
+    // Update the count in the SERVICE_DATA field of the advertising payload
+    uint8_t service_data[3];
+        service_data[0] = GattService::UUID_ENVIRONMENTAL_SERVICE & 0xff;
+        service_data[1] = GattService::UUID_ENVIRONMENTAL_SERVICE >> 8;
+        service_data[2] = 20; // Put the button click count in the third byte
+
+        advertising_data.addData(
+            GapAdvertisingData::SERVICE_DATA,
+            (uint8_t *)service_data,
+            sizeof(service_data)
+        );
+
+        uint8_t* field = findField(advDataType);
 
         return advertising_data;
     }
