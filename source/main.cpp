@@ -114,6 +114,7 @@ class MeasurementProcess{
             // and start advertising
            ble_process.start();
       
+      
             event_queue.call_every(MBED_CONF_APP_MEASUREMENT_INTERVAL,
                                     &measurement_process,
                                     &MeasurementProcess::measureLight);

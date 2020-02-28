@@ -32,11 +32,16 @@
             return false;
         }
 
-        // It will be called every time the BLE stack has pending work. 
+        /* hande gap events*/
+        _gap.setEventHandler(this);
+
+        // It will be called every time the BLE stack has pending work.      
         _ble_interface.onEventsToProcess(
             makeFunctionPointer(this,&BLEProcess::schedule_ble_events)
         );
         
+
+       printf("init..\n");
         ble_error_t error = _ble_interface.init(this,&BLEProcess::when_init_complete);
         if(error){
             printf("Error: %u returned by BLE::init.\r\n", error);
@@ -64,24 +69,26 @@
         }
         printf("BLE instance initialized.\r\n");
 
-        Gap &gap = _ble_interface.gap();
-        //gap.createSync()
-        printf("support periodic advertisng? %d\n",ret);
-        ble_error_t error = gap.setAdvertisingPayload(make_advertising_data());
-        if(error){
-            printf("Error %u during gap.setAdvertisingPayload",error);
+        /* setup the default phy used in connection to bit rate of 2 Mb/s to reduce power consumption */
+        if (_gap.isFeatureSupported(ble::controller_supported_features_t::LE_2M_PHY)) {
+            ble::phy_set_t phys(/* 1M */ false, /* 2M */ true, /* coded */ false);
+
+            ble_error_t error = _gap.setPreferredPhys(/* tx */&phys, /* rx */&phys);
+            if (error) {
+                printf("Error %x during GAP::setPreferedPhys\n",error);
+            }
         }
 
+        advertise();
+
+
+/*
         gap.setAdvertisingParams(make_advertising_params());
         gap.onConnection(this, &BLEProcess::when_connection);
         gap.onDisconnection(this, &BLEProcess::when_disconnection);
 
-        //hier set scan parameters
+        hier set scan parameters
         
-
-        /* start scanning and attach a callback that will handle advertisements
-         * and scan requests responses */
-
         start_advertising();
 
 
@@ -93,7 +100,61 @@
 
             }
         }
+        */
     }
+
+    void BLEProcess::advertise()
+    {
+        ble_error_t error;
+
+        // set advertising parameters, which defined in head file.
+        error = _gap.setAdvertisingParameters(
+            ble::LEGACY_ADVERTISING_HANDLE,
+            ble::AdvertisingParameters(
+                advertising_params.type,
+                advertising_params.min_interval, 
+                advertising_params.max_interval 
+            )
+        );
+
+        if(error){
+            printf("Error %d during Gap::setAdvertisingParameters()\n",error);
+        }
+
+        // max playload size get from _gap.getMaxAdvertisingDataLength()
+
+        uint8_t adv_buffer[MAX_ADVERTISING_PAYLOAD_SIZE];
+        
+        ble::AdvertisingDataBuilder adv_data_builder(adv_buffer);
+
+        // Add device name into the payload.
+        adv_data_builder.setName(MBED_CONF_APP_BLE_DEVICE_NAME);
+
+        uint8_t value[] = {0};
+        // Add service uuid and data into the payload
+        adv_data_builder.setServiceData(
+            UUID(GattService::UUID_ENVIRONMENTAL_SERVICE),
+            value
+        );
+
+        // Set advertising payload
+        error = _gap.setAdvertisingPayload(
+            ble::LEGACY_ADVERTISING_HANDLE,
+            adv_data_builder.getAdvertisingData()
+        );
+        if(error){
+            printf("Error %d during Gap::setAdvertisingPayload().\n",error);
+        }
+
+        // Start advertising.
+        error = _gap.startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
+        if (error) {
+             printf("Error %d during Gap::startAdvertising()",error);
+            return;
+        }
+
+    }
+
 
     // Start the gatt client process when a connection event is received.
      void BLEProcess::when_connection(const Gap::ConnectionCallbackParams_t *connection_event)
@@ -114,74 +175,8 @@
          start_advertising();
      }
 
-     // Start the advertising process; it ends when a device connects.
-    void BLEProcess::start_advertising()
-    {
-        ble_error_t error = _ble_interface.gap().startAdvertising();
-        if(error){
-            printf("Error %u during gap.startAdvertising.\r\n");
-        }else{
-            printf("Advertising start.\r\n");
-        }
-    }
-
     // Schedule processing of events from the BLE middleware in the event queue.
     void BLEProcess::schedule_ble_events(BLE::OnEventsToProcessCallbackContext *event)
     {
         _event_queue.call(mbed::callback(&event->ble, &BLE::processEvents));
-    }
-
-    // Build data advertised by the BLE interface.
-    GapAdvertisingData BLEProcess::make_advertising_data(){
-        GapAdvertisingData advertising_data;
-
-        // add advertising flags
-        advertising_data.addFlags(
-            GapAdvertisingData::LE_GENERAL_DISCOVERABLE | // Peripheral device is discoverable at any moment.
-            GapAdvertisingData::BREDR_NOT_SUPPORTED     // Peripheral device is LE only.
-        );
-
-        // add device name
-        advertising_data.addData(
-            GapAdvertisingData::COMPLETE_LOCAL_NAME, 
-            (uint8_t *)MBED_CONF_APP_BLE_DEVICE_NAME, 
-            strlen(MBED_CONF_APP_BLE_DEVICE_NAME)
-        );
-
-        advertising_data.addField(
-
-        );
-
-        // UUID's broadcast in advertising packet
-        uint16_t uuid16_list[] = {GattService::UUID_ENVIRONMENTAL_SERVICE};
-        advertising_data.addData(
-            GapAdvertisingData::COMPLETE_LIST_16BIT_SERVICE_IDS,
-            (uint8_t *)uuid16_list, 
-            sizeof(uuid16_list)
-        );
-        
-    // Update the count in the SERVICE_DATA field of the advertising payload
-    uint8_t service_data[3];
-        service_data[0] = GattService::UUID_ENVIRONMENTAL_SERVICE & 0xff;
-        service_data[1] = GattService::UUID_ENVIRONMENTAL_SERVICE >> 8;
-        service_data[2] = 20; // Put the button click count in the third byte
-
-        advertising_data.addData(
-            GapAdvertisingData::SERVICE_DATA,
-            (uint8_t *)service_data,
-            sizeof(service_data)
-        );
-
-        uint8_t* field = findField(advDataType);
-
-        return advertising_data;
-    }
-
-    GapAdvertisingParams BLEProcess::make_advertising_params(){
-        
-        return GapAdvertisingParams(
-            /* type */     GapAdvertisingParams::ADV_CONNECTABLE_UNDIRECTED,
-            /* interval */ GapAdvertisingParams::MSEC_TO_ADVERTISEMENT_DURATION_UNITS(500),
-            /* timeout */  0
-        );
     }
