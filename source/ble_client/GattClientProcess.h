@@ -12,7 +12,7 @@
 #include <GattCharacteristic.h>
 
 #include "SEGGER_RTT.h"
-#include "BLEProcess.h"
+#include "BLEAdvScanProcess.h"
 
 class GattClientProcess : public ble::Gap::EventHandler{
 

@@ -1,5 +1,5 @@
 #include "LDR.h"
-#include "BLEProcess.h"
+#include "BLEAdvScanProcess.h"
 #include "EnviromentSensingServer.h"
 #include "sdcardProcess.h"
 #include "sensor_type.h"
@@ -74,7 +74,7 @@ class MeasurementProcess{
             sd.add_log_file(light,1);
 
 
-            BLEProcess ble_process(event_queue,ble_interface);
+            BLEAdvScanProcess ble_process(event_queue,ble_interface);
             EnviromentSensingServer server;
             GattClientProcess client;
 

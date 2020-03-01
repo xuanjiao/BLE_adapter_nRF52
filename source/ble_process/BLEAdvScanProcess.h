@@ -1,42 +1,55 @@
 #ifndef BLE_PROCESS_H
 #define BLE_PROCESS_H
 
-#include "EventQueue.h"
+#include <events/mbed_events.h>
 #include "Callback.h"
-#include "NonCopyable.h"
 #include "BLE.h"
+#include "gap/Gap.h"
 #include "Gap.h"
+#include "gap/AdvertisingDataParser.h"
 #include "GapAdvertisingParams.h"
-#include "GapAdvertisingData.h"
+#include "gap/AdvertisingDataTypes.h"
+//#include "GapAdvertisingData.h"
 #include "FunctionPointerWithContext.h"
 #include "GattClient.h"     
-#include "EventQueue.h" 
 #include "SEGGER_RTT.h"
 #include "UUID.h"
+//#include <mbed.h>
+#include "util.h"
+#include <Span.h>
 
 typedef struct {
     ble::advertising_type_t type;
     ble::adv_interval_t min_interval;
     ble::adv_interval_t max_interval;       
-} AdvPrams_t;
+} AdvParams_t;
+
+typedef struct {
+    ble::scan_interval_t interval;
+    ble::scan_window_t window;
+    ble::scan_duration_t duration;
+    bool active;
+} ScanParams_t;
 
 typedef struct {
     UUID uuid;
     uint8_t value;
 } AdvServiceData_t;
 
-static const AdvPrams_t advertising_params = {
+static const AdvParams_t adv_params = {
     ble::advertising_type_t::CONNECTABLE_UNDIRECTED,
     ble::adv_interval_t(40),    // 0.625us x25 = 40us
-    ble::adv_interval_t(80)     // 80 us
+    ble::adv_interval_t(80)     //  80 us
 };
 
-static const AdvServiceData_t init_service_data = {
-    UUID(GattService::UUID_ENVIRONMENTAL_SERVICE),
-    0
+static const ScanParams_t scan_params = {
+    ble::scan_interval_t(160),  // 0.625us x  160 = 100us
+    ble::scan_window_t(100),    //  625us x 100 = 6.25ms
+    ble::scan_duration_t(0),     // scan never ends 
+    true    // active scanning flag.
 };
 
-class BLEProcess : public ble::Gap::EventHandler
+class BLEAdvScanProcess : public ble::Gap::EventHandler
 {
 
 private:
@@ -55,14 +68,18 @@ private:
     mbed::Callback<void()> _post_connection_compete_cb;
     
     int _count_init_cb;
+
+    int _scan_count;
     
 public:
-    BLEProcess(events::EventQueue &event_queue, BLE &ble_interface):
+    BLEAdvScanProcess(events::EventQueue &event_queue, BLE &ble_interface):
         _event_queue(event_queue),
         _ble_interface(ble_interface),
-        _gap(ble_interface.gap()){}
+        _gap(ble_interface.gap()),
+        _scan_count(0)
+        {}
 
-    ~BLEProcess();
+    ~BLEAdvScanProcess();
     
     void scan();
 
@@ -74,6 +91,7 @@ public:
     // Subscription to the ble interface connection complete event.
     void on_connection_complete(mbed::Callback<void()> cb);
 
+    
     // Initialize the ble interface, configure it and start advertising.
     bool start();
 
@@ -81,6 +99,15 @@ public:
     void stop();
 
     private:
+
+    // Called when advertising ends.
+    virtual void onAdvertisingEnd(const ble::AdvertisingEndEvent &event);
+
+    // Called when scan times out.
+    virtual void onScanTimeout(const ble::ScanTimeoutEvent &event);
+    
+    // Called when a scanner receives an advertising or a scan response packet.
+    virtual void onAdvertisingReport(const ble::AdvertisingReportEvent &event);	
 
     /** This is called when BLE interface is initialised and starts the first mode,
         it sets up adverting payload and start advertising.
@@ -92,7 +119,7 @@ public:
 
     // Stop the gatt client process when the device is disconnected then restart
     // advertising.
-     void when_disconnection(const Gap::DisconnectionCallbackParams_t *event);
+    void when_disconnection(const Gap::DisconnectionCallbackParams_t *event);
 
      // Start the advertising process; it ends when a device connects.
     void start_advertising();
@@ -100,6 +127,7 @@ public:
     // Schedule processing of events from the BLE middleware in the event queue.
     void schedule_ble_events(BLE::OnEventsToProcessCallbackContext *event);
 
+    void print_address(const uint8_t *addr);
 };
 
 #endif

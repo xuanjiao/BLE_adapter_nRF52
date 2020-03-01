@@ -49,6 +49,7 @@
         "typeinfo": "cpp",
         "cinttypes": "cpp",
         "map": "cpp",
-        "*.tpp": "cpp"
+        "*.tpp": "cpp",
+        "ratio": "cpp"
     }
 }
