@@ -50,6 +50,8 @@
         "cinttypes": "cpp",
         "map": "cpp",
         "*.tpp": "cpp",
-        "ratio": "cpp"
+        "ratio": "cpp",
+        "chrono": "cpp",
+        "ctime": "cpp"
     }
 }

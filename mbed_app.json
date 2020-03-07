@@ -23,6 +23,10 @@
         "pin_erase_sd_card":{
             "marco_name":"PIN_ERASE_SD_CARAD",
             "value":"BUTTON1"
+        },
+        "pin_advertise":{
+            "marco_name":"PIN_ADVERTISE",
+            "value":"BUTTON2"
         }
     },
 

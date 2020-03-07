@@ -5,6 +5,7 @@
                 "${workspaceRoot}\\*",
                 "${workspaceRoot}\\RTT\\*",
                 "${workspaceRoot}\\source\\ble_process\\*",
+                "${workspaceRoot}\\source\\*",
                 "${workspaceRoot}\\source\\ble_client\\*",
                 "${workspaceRoot}\\source\\ble_server\\*",
                 "${workspaceRoot}\\LDR\\*",
@@ -258,6 +259,7 @@
             "includePath": [
                 "${workspaceRoot}/*",
                 "${workspaceRoot}/RTT/*",
+                "${workspaceRoot}/source/*",
                 "${workspaceRoot}/source/ble_process/*",
                 "${workspaceRoot}/source/ble_client/*",
                 "${workspaceRoot}/source/ble_server/*",
@@ -516,6 +518,7 @@
             "includePath": [
                 "${workspaceRoot}/*",
                 "${workspaceRoot}/RTT/*",
+                "${workspaceRoot}/source/*",
                 "${workspaceRoot}/source/ble_process/*",
                 "${workspaceRoot}/source/ble_client/*",
                 "${workspaceRoot}/source/ble_server/*",

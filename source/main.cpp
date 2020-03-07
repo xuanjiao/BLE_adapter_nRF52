@@ -68,7 +68,6 @@ class MeasurementProcess{
 
            LDR ldr(MBED_CONF_APP_PIN_LIGHT);
 
-
             SDcardProcess sd(event_queue);
             sd.init_sd_card();
             sd.add_log_file(light,1);
@@ -115,9 +114,9 @@ class MeasurementProcess{
            ble_process.start();
       
       
-            event_queue.call_every(MBED_CONF_APP_MEASUREMENT_INTERVAL,
-                                    &measurement_process,
-                                    &MeasurementProcess::measureLight);
+            // event_queue.call_every(MBED_CONF_APP_MEASUREMENT_INTERVAL,
+            //                         &measurement_process,
+            //                         &MeasurementProcess::measureLight);
 
             // Process the event queue.
             event_queue.dispatch();

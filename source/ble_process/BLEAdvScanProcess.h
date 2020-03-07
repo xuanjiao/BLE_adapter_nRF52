@@ -14,46 +14,20 @@
 #include "GattClient.h"     
 #include "SEGGER_RTT.h"
 #include "UUID.h"
-//#include <mbed.h>
+#include <mbed.h>
 #include "util.h"
 #include <Span.h>
+#include <map>
+#include "ble_define.h"
 
-typedef struct {
-    ble::advertising_type_t type;
-    ble::adv_interval_t min_interval;
-    ble::adv_interval_t max_interval;       
-} AdvParams_t;
-
-typedef struct {
-    ble::scan_interval_t interval;
-    ble::scan_window_t window;
-    ble::scan_duration_t duration;
-    bool active;
-} ScanParams_t;
-
-typedef struct {
-    UUID uuid;
-    uint8_t value;
-} AdvServiceData_t;
-
-static const AdvParams_t adv_params = {
-    ble::advertising_type_t::CONNECTABLE_UNDIRECTED,
-    ble::adv_interval_t(40),    // 0.625us x25 = 40us
-    ble::adv_interval_t(80)     //  80 us
-};
-
-static const ScanParams_t scan_params = {
-    ble::scan_interval_t(160),  // 0.625us x  160 = 100us
-    ble::scan_window_t(100),    //  625us x 100 = 6.25ms
-    ble::scan_duration_t(0),     // scan never ends 
-    true    // active scanning flag.
-};
 
 class BLEAdvScanProcess : public ble::Gap::EventHandler
 {
+    typedef BLEAdvScanProcess Self;
+
+    typedef pair<ble::connection_handle_t, device_t> value_type;
 
 private:
-    static const uint16_t MAX_ADVERTISING_PAYLOAD_SIZE = 251;
 
     events::EventQueue &_event_queue;
 
@@ -61,22 +35,47 @@ private:
 
     Gap &_gap;
 
-    const static int CALLBACK_NUM_MAX = 3;
+    static const int CALLBACK_NUM_MAX = 3;
+
+    bool _is_in_scanning_mode;
+
+    bool _is_connecting;
 
     mbed::Callback<void(BLE&,events::EventQueue&)> _post_init_cbs[CALLBACK_NUM_MAX];
 
-    mbed::Callback<void()> _post_connection_compete_cb;
+    mbed::Callback<void(device_t new_device)> _post_connection_compete_cb;
     
     int _count_init_cb;
 
     int _scan_count;
+
+    int _on_duration_end_id;
     
+    int _on_led_blinking_id;
+    // InterruptIn *_button;
+
+    // DigitalOut *_led1;
+
+    bool start_adv;
+
+    DigitalOut _led_scan;
+
+    DigitalOut _led_adv;
+
+   // InterruptIn _irq;
 public:
     BLEAdvScanProcess(events::EventQueue &event_queue, BLE &ble_interface):
         _event_queue(event_queue),
         _ble_interface(ble_interface),
         _gap(ble_interface.gap()),
-        _scan_count(0)
+        _scan_count(0),
+        _is_in_scanning_mode(true),
+        _is_connecting(false),
+        _on_duration_end_id(0),
+        start_adv(false),
+        //_irq(MBED_CONF_APP_PIN_ADVERTISE),
+        _led_scan(LED3,1),
+        _led_adv(LED1,1)
         {}
 
     ~BLEAdvScanProcess();
@@ -89,7 +88,7 @@ public:
     void on_init(mbed::Callback<void(BLE&,events::EventQueue&)> cb);
 
     // Subscription to the ble interface connection complete event.
-    void on_connection_complete(mbed::Callback<void()> cb);
+    void on_connection_complete(mbed::Callback<void(device_t)> cb);
 
     
     // Initialize the ble interface, configure it and start advertising.
@@ -109,25 +108,33 @@ public:
     // Called when a scanner receives an advertising or a scan response packet.
     virtual void onAdvertisingReport(const ble::AdvertisingReportEvent &event);	
 
-    /** This is called when BLE interface is initialised and starts the first mode,
-        it sets up adverting payload and start advertising.
-    **/
+    // Called when connection attempt ends or an advertising device has been connected.
+    virtual void onConnectionComplete(const ble::ConnectionCompleteEvent &event);
+
+    // Called when a connection has been disconnected.
+    virtual void onDisconnectionComplete(const ble::DisconnectionCompleteEvent &event);
+    
+    
+    //This is called when BLE interface is initialised and starts the first mode,
+    //    it sets up adverting payload and start advertising.
     void when_init_complete(BLE::InitializationCompleteCallbackContext *event);
-
-    // Start the gatt client process when a connection event is received.
-    void when_connection(const Gap::ConnectionCallbackParams_t *connection_event);
-
-    // Stop the gatt client process when the device is disconnected then restart
-    // advertising.
-    void when_disconnection(const Gap::DisconnectionCallbackParams_t *event);
-
-     // Start the advertising process; it ends when a device connects.
-    void start_advertising();
 
     // Schedule processing of events from the BLE middleware in the event queue.
     void schedule_ble_events(BLE::OnEventsToProcessCallbackContext *event);
 
+    void connectToPeer(ble::peer_address_type_t peerAddressType,
+                                            const ble::address_t & peerAddress,
+                                            const ble::ConnectionParameters & connectionParams);
+
+    void mode_start();
+
+    void mode_end();
+
+    void led_scan_change_state();
+
     void print_address(const uint8_t *addr);
+
+    void print_uuid(const UUID &uuid);
 };
 
 #endif

@@ -1,16 +1,15 @@
-#include "ble/BLE.h"
-#include "ble/Gap.h"
-#include "ble/GattClient.h"
-#include "ble/GattCharacteristic.h"
-#include "ble/GapAdvertisingParams.h"
-#include "ble/GapAdvertisingData.h"
-#include "ble/GattClient.h"
-#include "ble/DiscoveredService.h"
-#include "ble/DiscoveredCharacteristic.h"
-#include "ble/CharacteristicDescriptorDiscovery.h"
-#include "ble/GattAttribute.h"
-#include <GattCharacteristic.h>
-
+#include "BLE.h"
+#include "gap/Gap.h"
+#include "Gap.h"
+#include "GattClient.h"
+#include "GattCharacteristic.h"
+#include "GapAdvertisingParams.h"
+#include "GapAdvertisingData.h"
+#include "DiscoveredService.h"
+#include "DiscoveredCharacteristic.h"
+#include "CharacteristicDescriptorDiscovery.h"
+#include "GattAttribute.h"
+#include "ble_define.h"
 #include "SEGGER_RTT.h"
 #include "BLEAdvScanProcess.h"
 
@@ -29,9 +28,10 @@ class GattClientProcess : public ble::Gap::EventHandler{
         GattClientProcess():
             _gattClient(NULL),
             _event_queue(NULL),
-            _ble_interface(NULL),
-            _CTC_handle(0),
-            _connection_handle(0){
+            _ble_interface(NULL)
+            // _CTC_handle(0),
+            // _connection_handle(0)
+            {
 
         }
         
@@ -43,9 +43,11 @@ class GattClientProcess : public ble::Gap::EventHandler{
         void init(BLE &ble_interface, events::EventQueue &event_queue);
 
         // Launch the service and characteristic discovery procedure of a GATT server peer.
-        void start();
+        void start(device_t new_device);
 
         void stop();
+
+        void print_device_info(device_t &dev);
 
     private:
         /**
@@ -65,23 +67,25 @@ class GattClientProcess : public ble::Gap::EventHandler{
         // 	Characteristic discovered event handler invoked when a matching characteristic has been found. 
         void when_characteristic_discovered(const DiscoveredCharacteristic* discovered_characteristic);
 
-        void when_service_discovery_ends(ble::connection_handle_t connection_handle);
+        void when_service_discovery_ends(const ble::connection_handle_t connection_handle);
 
         // Attribute read event handler.
         void when_char_data_read(const GattReadCallbackParams* params);
         
-        // Called when connection attempt ends or an advertising device has been connected.
-        virtual void onConnectionComplete (const ble::ConnectionCompleteEvent &event);
-        
+        void setRTC(const uint8_t *p_data,uint16_t len);
+
         GattClient *_gattClient;
 
         events::EventQueue *_event_queue;
 
         BLE *_ble_interface;
 
-        GattAttribute::Handle_t _CTC_handle;
+        // GattAttribute::Handle_t _CTC_handle;
 
         // Handle of the connection with the peer GATT server.
-        ble::connection_handle_t _connection_handle;
+        // ble::connection_handle_t _connection_handle;
+
+        
+        map<ble::connection_handle_t,device_t> devices;
 
 };
