@@ -91,7 +91,7 @@ class MeasurementProcess{
             // be called once connected.
        
             ble_process.on_connection_complete(
-                mbed::callback(&client,&GattClientProcess::start)
+                mbed::callback(&client,&GattClientProcess::start_service_discovery)
             );
         
             MeasurementProcess measurement_process(ldr);

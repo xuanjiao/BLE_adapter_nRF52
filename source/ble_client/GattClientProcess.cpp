@@ -20,7 +20,7 @@ void GattClientProcess::init(BLE &ble_interface, events::EventQueue &event_queue
     _gattClient->onDataRead(as_cb(&Self::when_char_data_read));
 }
 
-void GattClientProcess::start(device_t new_device)
+void GattClientProcess::start_service_discovery(device_t new_device)
 {
     devices.insert(make_pair(new_device.connection_handle,new_device));
     printf("Get connection handle %d Discovering service...",new_device.connection_handle);
@@ -28,7 +28,7 @@ void GattClientProcess::start(device_t new_device)
     // launch service discovery  peer
     ble_error_t error = _gattClient->launchServiceDiscovery(
         new_device.connection_handle,
-        as_cb(&Self::when_service_discovered),
+        NULL,//as_cb(&Self::when_service_discovered),
         as_cb(&Self::when_characteristic_discovered)
     );
 
@@ -87,43 +87,63 @@ void GattClientProcess::when_service_discovery_ends(const ble::connection_handle
 
     if(dev.is_CTS){
         // if peer is a CTS device, read its time value
-        printf("read time from handle... %d\n",dev.time_handle);
+        printf("read time from handle... %d\n",dev.time_value_handle);
         error = _gattClient->read(
             connection_handle,  // connection handle
-            dev.time_handle,    // attribute handle
-            0                   //offset
-        );
+            dev.time_value_handle,    // attribute handle
+            0);            //offset
+
+        if(error){
+            printf("Error %u during read write ble attributes.\n");
+            _event_queue->call(this,&Self::stop); 
+        }
+
     }else if(dev.is_beacon){
-            // if peer is a CTS device, rhead its ligt value
-            printf("read light from handle... %d\n",dev.light_handle);
+            printf("enable data collection. write cmd to handle %d\n",dev.light_config_handle);
+            
+            // if peer is a CTS device, write 0x01 to config char to enable data collection
+            uint8_t cmd = 0x01;
+            error =_gattClient->write(
+                GattClient::GATT_OP_WRITE_CMD,
+                dev.connection_handle,
+                dev.light_config_handle,
+                sizeof(cmd),
+                &cmd);
+
+            if(error){
+                printf("Error %u during read write ble attributes.\n");
+                _event_queue->call(this,&Self::stop); 
+            }
+
+            wait_ms(500);
+            
+            // read its ligt value
+            printf("read light from handle... %d\n",dev.light_value_handle);
             error = _gattClient->read(
-            connection_handle,  // connection handle
-            dev.light_handle,    // attribute handle
-            0                   //offset
-        );
-    }
+            dev.connection_handle,  // connection handle
+            dev.light_value_handle,    // attribute handle
+            0  );                 //offset
+                
+            if(error){
+                printf("Error %u during read write ble attributes.\n");
+                _event_queue->call(this,&Self::stop); 
+            }
 
-    // When all serviced discovered, use handle to read characteristic value.
 
-
-    if(error){
-        printf("Error %u during read ble attributes.\n");
-        _event_queue->call(this,&Self::stop); 
     }
 
 }
 
-
-// The GattClient invokes this function when a service has been discovered.
-void GattClientProcess::when_service_discovered(const DiscoveredService* discovered_service)
-{
-    printf("Service discovered: uuid: ");
-    print_uuid(discovered_service->getUUID());
+// // The GattClient invokes this function when a service has been discovered.
+// void GattClientProcess::when_service_discovered(const DiscoveredService* discovered_service)
+// {
+//     printf("Service discovered: uuid: ");
+//     print_uuid(discovered_service->getUUID());
     
-    int start_handle = discovered_service->getStartHandle();
-    int end_handle = discovered_service->getEndHandle();
-    printf("start handle %d, end handle %d\n",start_handle,end_handle);
-}
+//     int start_handle = discovered_service->getStartHandle();
+//     int end_handle = discovered_service->getEndHandle();
+//     printf("start handle %d, end handle %d\n",start_handle,end_handle);
+// }
 
 void GattClientProcess::when_characteristic_discovered(const DiscoveredCharacteristic* discovered_characteristic)
 {
@@ -132,39 +152,32 @@ void GattClientProcess::when_characteristic_discovered(const DiscoveredCharacter
     // uint16_t uuid = *((const uint16_t*)discovered_characteristic->getUUID().getBaseUUID());
     ble::connection_handle_t connHandle = discovered_characteristic->getConnectionHandle();
     UUID uuid = discovered_characteristic->getUUID();
-    int handle = discovered_characteristic->getValueHandle();
     
-    // find device object with related connectionhandle
-    device_t &dev = devices[connHandle];
-
-    printf("characteristic found,[char uuid]");
-    print_uuid(uuid);
-    printf("[connHandle] %d , [value handle] %d\n",connHandle,handle);
-
     //peripherals.insert(new value_type());
-    if(uuid == UUID(GattCharacteristic::UUID_CURRENT_TIME_CHAR)){
-        printf("**Current time Characteristic found\n");
-        dev.time_handle = handle;   // store handle in object
+    if(uuid == UUID_CURRENT_TIME_CHAR){
+
+        printf("**Current time Characteristic found. uuid: ");
+        print_uuid(uuid);
+         // find device object with related connectionhandle
+        device_t &dev = devices[connHandle];
+        dev.time_value_handle = discovered_characteristic->getValueHandle();   // store handle in object
         dev.is_CTS = true;          // peer is a device with CTS 
-        // _CTC_handle = handle;
-    }else if( uuid == UUID("F000aa71-0451-4000-B000-000000000000")){
-        printf("**light char found.\n");
-        dev.light_handle = handle;
-        dev.is_beacon = true;       // peer is a beacon
-    }
-   
-    // switch (uuid)
-    // {
-    // case GattCharacteristic::UUID_CURRENT_TIME_CHAR:
-    //             printf("**Current time Characteristic found. Value handle %d\n",handle);
-    //             _CTC_handle = handle;
-    //     break;
-    
-    // default:
         
-    //     break;
-    // }
-    
+    }else if( uuid == UUID_LUX_VALUE_CHAR){
+        
+        printf("**light value char found. uuid:\n");
+        print_uuid(uuid);
+        device_t &dev = devices[connHandle];
+        dev.light_value_handle = discovered_characteristic->getValueHandle();
+        dev.is_beacon = true;       // peer is a beacon
+    }else if(uuid == UUID_LUX_CONFIG_CHAR){
+                
+        printf("**light config char found. uuid:\n");
+        print_uuid(uuid);  
+        device_t &dev = devices[connHandle];
+        dev.light_config_handle = discovered_characteristic->getValueHandle();
+        dev.is_beacon = true;       // peer is a beacon
+    }   
 }
 
 
@@ -265,7 +278,7 @@ void GattClientProcess::print_uuid(const UUID &uuid)
     uint8_t len = uuid.getLen();
     // uuid is LSB
     for(int i = len - 1; i >-1; i--){
-            printf("%.2x ",p_uuid[i]);
+            printf("%.2x",p_uuid[i]);
     }
     printf("\n");
 }
@@ -285,8 +298,8 @@ void GattClientProcess::print_device_info(device_t &dev){
     const uint8_t *addr = dev.address;
     printf("dev.address = %02x:%02x:%02x:%02x:%02x:%02x\n",
            addr[5], addr[4], addr[3], addr[2], addr[1], addr[0]);
-    printf("dev.time_handle = %d\n",dev.time_handle);
-    printf("dev.light_handle = %d\n",dev.light_handle);
-    printf("dev.motion_handle = %d\n",dev.motion_handle);
+    printf("dev.time_value_handle = %d\n",dev.time_value_handle);
+    printf("dev.light_value_handle = %d\n",dev.light_value_handle);
+    printf("dev.motion_value_handle = %d\n",dev.motion_value_handle);
 }
 

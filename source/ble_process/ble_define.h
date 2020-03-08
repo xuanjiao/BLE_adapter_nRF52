@@ -1,6 +1,12 @@
 #ifndef BLE_DEFINE_H
 #define BLE_DEFINE_H
 
+static const UUID UUID_LUX_VALUE_CHAR = UUID("F000aa71-0451-4000-B000-000000000000");
+
+ static const UUID UUID_LUX_CONFIG_CHAR = UUID("F000aa72-0451-4000-B000-000000000000");
+
+static const UUID UUID_CURRENT_TIME_CHAR = UUID(GattCharacteristic::UUID_CURRENT_TIME_CHAR);
+
 /* Duration of each mode in milliseconds */
 static const size_t MODE_DURATION_MS      = 10000;
 
@@ -21,9 +27,12 @@ typedef struct {
     bool is_CTS;
     bool is_beacon;
     uint8_t address[6];
-    GattAttribute::Handle_t time_handle;
-    GattAttribute::Handle_t light_handle;
-    GattAttribute::Handle_t motion_handle;
+    GattAttribute::Handle_t time_value_handle;
+    GattAttribute::Handle_t light_config_handle;
+    GattAttribute::Handle_t light_value_handle;
+    GattAttribute::Handle_t motion_config_handle;
+    GattAttribute::Handle_t motion_value_handle;
+
 }device_t;
 
 typedef struct date_time{
