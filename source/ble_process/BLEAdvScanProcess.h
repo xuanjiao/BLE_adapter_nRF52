@@ -62,6 +62,8 @@ private:
 
     DigitalOut _led_adv;
 
+    DigitalOut _led_connect;
+
    // InterruptIn _irq;
 public:
     BLEAdvScanProcess(events::EventQueue &event_queue, BLE &ble_interface):
@@ -73,9 +75,9 @@ public:
         _is_connecting(false),
         _on_duration_end_id(0),
         start_adv(false),
-        //_irq(MBED_CONF_APP_PIN_ADVERTISE),
-        _led_scan(LED3,1),
-        _led_adv(LED1,1)
+        _led_adv(LED1,1),
+        _led_scan(LED2,1),
+        _led_connect(LED3,1)
         {}
 
     ~BLEAdvScanProcess();
@@ -130,7 +132,7 @@ public:
 
     void mode_end();
 
-    void led_scan_change_state();
+    void led_connect_change_state();
 
     void print_address(const uint8_t *addr);
 

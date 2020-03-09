@@ -34,7 +34,7 @@ void GattClientProcess::start_service_discovery(device_t new_device)
 
     if(error){
         printf("Error %d\r\n",error);
-        _event_queue->call(this,&Self::stop);
+        _event_queue->call(this,&Self::stop_service_discovery);
         return;
     }
         
@@ -50,7 +50,7 @@ void GattClientProcess::when_char_data_read(const GattReadCallbackParams* params
                 params->status,
                 params->handle,
                 params->error_code);
-        _event_queue->call(this,&Self::stop);        
+        _event_queue->call(this,&Self::stop_service_discovery);        
         return;
     }
 
@@ -71,7 +71,8 @@ void GattClientProcess::when_char_data_read(const GattReadCallbackParams* params
 
     // if device has CTS
     if(dev.is_CTS){
-        setRTC(p_data,len);
+        _event_queue->call<GattClientProcess,void,const uint8_t*,uint16_t>(this,&Self::setRTC,p_data,len);   
+      //  _event_queue->call<GattClientProcess,void,device_t&>(this,&Self::disconnect_peer,dev);
     }
 
 }
@@ -95,7 +96,7 @@ void GattClientProcess::when_service_discovery_ends(const ble::connection_handle
 
         if(error){
             printf("Error %u during read write ble attributes.\n");
-            _event_queue->call(this,&Self::stop); 
+            _event_queue->call(this,&Self::stop_service_discovery); 
         }
 
     }else if(dev.is_beacon){
@@ -112,7 +113,7 @@ void GattClientProcess::when_service_discovery_ends(const ble::connection_handle
 
             if(error){
                 printf("Error %u during read write ble attributes.\n");
-                _event_queue->call(this,&Self::stop); 
+                _event_queue->call(this,&Self::stop_service_discovery); 
             }
 
             wait_ms(500);
@@ -126,7 +127,7 @@ void GattClientProcess::when_service_discovery_ends(const ble::connection_handle
                 
             if(error){
                 printf("Error %u during read write ble attributes.\n");
-                _event_queue->call(this,&Self::stop); 
+                _event_queue->call(this,&Self::stop_service_discovery); 
             }
 
 
@@ -182,37 +183,41 @@ void GattClientProcess::when_characteristic_discovered(const DiscoveredCharacter
 
 
 // Stop the discovery process and clean the instance.
-void GattClientProcess::stop()
-{
-    if (!_gattClient) {
-        printf("no gatt instance\n");
-         return;
-         }
-
-    // unregister event handlers
-    _gattClient->onServiceDiscoveryTermination(NULL);
-
+void GattClientProcess::stop_service_discovery()
+{  
     if(_ble_interface == NULL){
         printf("NO ble interface.\n");
         return;
     }
 
-    //printf("Service discovery stopped. Disconnecting handle %d..",_connection_handle);
+    if (!_gattClient) {
+        printf("no gatt instance\n");
+         return;
+    }
 
-//     ble_error_t error = _ble_interface->gap().disconnect(
-//    //     _connection_handle,
-//         ble::local_disconnection_reason_t::USER_TERMINATION
-//     );
+    // unregister event handlers
+    _gattClient->onServiceDiscoveryTermination(NULL);
+
+    // Clear up instance
+    _gattClient = NULL;
+
+    printf("Service discovery stopped.\n");
+}
+
+void GattClientProcess::disconnect_peer(device_t &dev){
+    ble_error_t error;
+    
+    error = _ble_interface->gap().disconnect(
+        dev.connection_handle,
+        ble::local_disconnection_reason_t::USER_TERMINATION
+    );
 
     if(error){
-     //   printf("\nError %d during disconnect handle %d\n",_connection_handle);
+        printf("Error %d during disconnect device. info:\n");
+        print_device_info(dev);
         return;
     }
     printf("OK\n");
-    
-    // Clear up instance
-    //_gattClient = NULL;
-    // _connection_handle = 0;
 }
 
 void GattClientProcess::setRTC(const uint8_t *p_data,uint16_t len){
@@ -269,7 +274,6 @@ void GattClientProcess::setRTC(const uint8_t *p_data,uint16_t len){
         strftime(buffer,sizeof(buffer),"%Y-%m-%d %H:%M:%S  day of week %u",localtime(&_current_time));
         printf("local time %s\r\n",buffer);
 
-        // _event_queue->call(this,&Self::stop);
 }
 
 void GattClientProcess::print_uuid(const UUID &uuid)

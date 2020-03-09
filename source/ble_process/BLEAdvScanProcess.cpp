@@ -326,8 +326,8 @@
                     // // Stop scan and stop advertising
                     // _event_queue.cancel(_on_duration_end_id);
 
-                    // Scan led blink
-                    _on_led_blinking_id = _event_queue.call_every(LED_BLINK_INTERVAL_MS,this,&Self::led_scan_change_state);
+                    // connect led blink
+                    _on_led_blinking_id = _event_queue.call_every(LED_BLINK_INTERVAL_MS,this,&Self::led_connect_change_state);
 
                     // Connect to peer
                     _event_queue.call<BLEAdvScanProcess,void,ble::peer_address_type_t,
@@ -409,7 +409,7 @@
             printf("reason : %x\n",event.getReason().value());
         }
         
-        // led scan stop blinkiing
+        // led connect stop blinkiing
         _event_queue.cancel(_on_led_blinking_id);
         
         //we have successfully disconnected. ending the demo, move to next mode 
@@ -428,6 +428,6 @@
            addr[5], addr[4], addr[3], addr[2], addr[1], addr[0]);
     }
 
-    void BLEAdvScanProcess::led_scan_change_state(){
-        _led_scan = !_led_scan;
+    void BLEAdvScanProcess::led_connect_change_state(){
+        _led_connect = !_led_connect;
     }

@@ -37,7 +37,7 @@ class GattClientProcess : public ble::Gap::EventHandler{
         
         ~GattClientProcess()
         {
-            stop();
+            stop_service_discovery();
         }
       
         void init(BLE &ble_interface, events::EventQueue &event_queue);
@@ -45,10 +45,11 @@ class GattClientProcess : public ble::Gap::EventHandler{
         // Launch the service and characteristic discovery procedure of a GATT server peer.
         void start_service_discovery(device_t new_device);
 
-        void stop();
+        void stop_service_discovery();
 
         void print_device_info(device_t &dev);
 
+        void disconnect_peer(device_t &dev);
     private:
         /**
          * Helper that construct an event handler from a member function of this
