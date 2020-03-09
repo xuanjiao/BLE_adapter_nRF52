@@ -52,14 +52,6 @@
         return true;
     }
 
-    // void BLEAdvScanProcess::when_adv_button_pressed()
-    // {
-    //     printf("Button Pressed\n");
-    //     // if advertise button is pressed, send a advertise signal
-    //     start_adv = true;
-    //     _led_scan = 1;
-    // }
-
     // Close existing connection and stop process
     void BLEAdvScanProcess::stop()
     {
@@ -117,7 +109,6 @@
         // connection state
         _is_connecting = false;
 
-
         // queue up next mode
         _on_duration_end_id = _event_queue.call_in(
             MODE_DURATION_MS,
@@ -138,23 +129,16 @@
             _led_scan = 1; //led scan off
 
             // if it is scanning, stop scan
-            error  = _gap.stopScan();
-            if(error){
-                printf("Error %d during Gap::stopScan\n",error);
-            }
+            _gap.stopScan();
         }else{
             _led_adv = 1; //led adv off
+            
             // if it is advertising, stop advertise
-            error = _gap.stopAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
-            if(error){
-                printf("Error %d during Gap::stopAdvertising\n",error);
-            }
+            _gap.stopAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
         }
 
         // Change to another mode
         _is_in_scanning_mode = !_is_in_scanning_mode;
-        
-        //_ble_interface.shutdown();
 
         _event_queue.call_in(
             TIME_BETWEEN_MODES_MS,
@@ -364,7 +348,7 @@
     //  Called by Gap to notify the scan times out.
     void BLEAdvScanProcess::onScanTimeout(const ble::ScanTimeoutEvent &event)
     {
-         printf("Stopped scanning early due to timeout parameter\r\n");
+         printf("Stopped scanning\n");
          _led_scan = 1; // led scan stop
     }
 
@@ -385,9 +369,10 @@
         memcpy(new_device.address,event.getPeerAddress().data(),sizeof(new_device.address));
         
         
-        // //Continue advertise and find other periphrals 
-        // _event_queue.call(this, &Self::mode_end);
+        //Continue advertise and find other periphrals 
+        _event_queue.call(this, &Self::mode_end);
 
+        _is_connecting = true;
         // Start gatt client service discovery
         if(_post_connection_compete_cb){
              _post_connection_compete_cb(new_device);

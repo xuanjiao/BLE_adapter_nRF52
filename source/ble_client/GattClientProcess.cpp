@@ -33,7 +33,7 @@ void GattClientProcess::start_service_discovery(device_t new_device)
     );
 
     if(error){
-        printf("Error %d\r\n",error);
+        printf("Error %s\r\n",BLE::errorToString(error));
         _event_queue->call(this,&Self::stop_service_discovery);
         return;
     }
@@ -67,12 +67,13 @@ void GattClientProcess::when_char_data_read(const GattReadCallbackParams* params
     }
     printf("\n");
 
-    device_t &dev = devices[handle];
+    device_t &dev = devices[params->connHandle];
 
     // if device has CTS
     if(dev.is_CTS){
+        //setRTC(p_data,len);
         _event_queue->call<GattClientProcess,void,const uint8_t*,uint16_t>(this,&Self::setRTC,p_data,len);   
-      //  _event_queue->call<GattClientProcess,void,device_t&>(this,&Self::disconnect_peer,dev);
+        _event_queue->call<GattClientProcess,void,device_t&>(this,&Self::disconnect_peer,dev);
     }
 
 }
@@ -95,7 +96,7 @@ void GattClientProcess::when_service_discovery_ends(const ble::connection_handle
             0);            //offset
 
         if(error){
-            printf("Error %u during read write ble attributes.\n");
+            printf("Error %s during read write ble attributes.\n",BLE::errorToString(error));
             _event_queue->call(this,&Self::stop_service_discovery); 
         }
 
@@ -112,7 +113,7 @@ void GattClientProcess::when_service_discovery_ends(const ble::connection_handle
                 &cmd);
 
             if(error){
-                printf("Error %u during read write ble attributes.\n");
+                printf("Error %s during read write ble attributes.\n",BLE::errorToString(error));
                 _event_queue->call(this,&Self::stop_service_discovery); 
             }
 
@@ -126,7 +127,7 @@ void GattClientProcess::when_service_discovery_ends(const ble::connection_handle
             0  );                 //offset
                 
             if(error){
-                printf("Error %u during read write ble attributes.\n");
+                printf("Error %s during read write ble attributes.\n",BLE::errorToString(error));
                 _event_queue->call(this,&Self::stop_service_discovery); 
             }
 
@@ -213,7 +214,7 @@ void GattClientProcess::disconnect_peer(device_t &dev){
     );
 
     if(error){
-        printf("Error %d during disconnect device. info:\n");
+        printf("Error %s during disconnect device. info:\n",BLE::errorToString(error));
         print_device_info(dev);
         return;
     }
@@ -221,7 +222,7 @@ void GattClientProcess::disconnect_peer(device_t &dev){
 }
 
 void GattClientProcess::setRTC(const uint8_t *p_data,uint16_t len){
-
+    
         uint8_t data[len];
         memcpy(data,p_data,len);
 
