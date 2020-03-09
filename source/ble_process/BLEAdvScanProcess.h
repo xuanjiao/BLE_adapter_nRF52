@@ -127,7 +127,7 @@ public:
     void connectToPeer(ble::peer_address_type_t peerAddressType,
                                             const ble::address_t & peerAddress,
                                             const ble::ConnectionParameters & connectionParams);
-
+                                            
     void mode_start();
 
     void mode_end();

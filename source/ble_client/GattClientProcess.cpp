@@ -42,42 +42,6 @@ void GattClientProcess::start_service_discovery(device_t new_device)
 
 }
 
-void GattClientProcess::when_char_data_read(const GattReadCallbackParams* params)
-{
-        // Check read status
-    if(params->status != BLE_ERROR_NONE){
-        printf("Status %x during read data from handle %d. Error code %x.\n",
-                params->status,
-                params->handle,
-                params->error_code);
-        _event_queue->call(this,&Self::stop_service_discovery);        
-        return;
-    }
-
-    // get attribute handle, data and data length 
-    GattAttribute::Handle_t handle = params->handle;
-    const uint16_t len = params->len;
-    const uint8_t* p_data = params->data;
-    
-    printf("read %d bytes from handle %d: \n",len,handle);
-
-    // read data from callback parameter
-    for(uint16_t i = 0; i < len;i++){
-        printf("0x%02x ",p_data[i]);
-    }
-    printf("\n");
-
-    device_t &dev = devices[params->connHandle];
-
-    // if device has CTS
-    if(dev.is_CTS){
-        //setRTC(p_data,len);
-        _event_queue->call<GattClientProcess,void,const uint8_t*,uint16_t>(this,&Self::setRTC,p_data,len);   
-        _event_queue->call<GattClientProcess,void,device_t&>(this,&Self::disconnect_peer,dev);
-    }
-
-}
-
 void GattClientProcess::when_service_discovery_ends(const ble::connection_handle_t connection_handle)
 {
     ble_error_t error;
@@ -117,23 +81,44 @@ void GattClientProcess::when_service_discovery_ends(const ble::connection_handle
                 _event_queue->call(this,&Self::stop_service_discovery); 
             }
 
-            wait_ms(500);
+            _event_queue->call_every(5000,this,&Self::read_value_all_sensors);
+
+            // wait_ms(500);
             
             // read its ligt value
-            printf("read light from handle... %d\n",dev.light_value_handle);
-            error = _gattClient->read(
-            dev.connection_handle,  // connection handle
-            dev.light_value_handle,    // attribute handle
-            0  );                 //offset
+            // printf("read light from handle... %d\n",dev.light_value_handle);
+            // error = _gattClient->read(
+            // dev.connection_handle,  // connection handle
+            // dev.light_value_handle,    // attribute handle
+            // 0  );                 //offset
                 
-            if(error){
-                printf("Error %s during read write ble attributes.\n",BLE::errorToString(error));
-                _event_queue->call(this,&Self::stop_service_discovery); 
-            }
+            // if(error){
+            //     printf("Error %s during read write ble attributes.\n",BLE::errorToString(error));
+            //     _event_queue->call(this,&Self::stop_service_discovery); 
+            // }
 
 
     }
 
+}
+
+void GattClientProcess::read_value_all_sensors(){
+
+    for(std::map<ble::connection_handle_t,device_t>::iterator it = devices.begin(); it != devices.end() ;it++){
+        printf("read sensor data from sensor");
+        print_addr(it->second.address);
+        
+        // printf("read light from handle... %d\n",dev.light_value_handle);
+            ble_error_t error = _gattClient->read(
+            it->second.connection_handle,      // connection handle
+            it->second.light_value_handle,     // attribute handle
+            0);                         // offset
+
+            if(error){
+                printf("Error %s during read write ble attributes.\n",BLE::errorToString(error));
+                _event_queue->call(this,&Self::stop_service_discovery); 
+            }
+    }
 }
 
 // // The GattClient invokes this function when a service has been discovered.
@@ -182,6 +167,57 @@ void GattClientProcess::when_characteristic_discovered(const DiscoveredCharacter
     }   
 }
 
+void GattClientProcess::when_char_data_read(const GattReadCallbackParams* params)
+{
+        // Check read status
+    if(params->status != BLE_ERROR_NONE){
+        printf("Status %x during read data from handle %d. Error code %x.\n",
+                params->status,
+                params->handle,
+                params->error_code);
+        _event_queue->call(this,&Self::stop_service_discovery);        
+        return;
+    }
+    device_t &dev = devices[params->connHandle];
+
+    // get attribute handle, data and data length 
+    GattAttribute::Handle_t handle = params->handle;
+    const uint16_t len = params->len;
+    const uint8_t* p_data = params->data;
+    
+    printf("read %d bytes from handle %d: \n",len,handle);
+
+    // read data from callback parameter
+    for(uint16_t i = 0; i < len;i++){
+        printf("buf[%d]=0x%02x ",i,p_data[i]);
+    }
+    printf("\n");
+
+    if(dev.is_beacon && handle == dev.light_value_handle){
+        // if get a 2-bytes light value, convert it to lux
+        // byte 1 is MSB, byte 0 is LSB
+        uint16_t rawData, e,m;
+        uint16_t value;
+
+        rawData = (uint16_t)p_data[1] << 8 | (uint16_t)p_data[0];
+        m = rawData & 0x0FFF;
+        e = (rawData & 0xF000) >> 12;
+
+        /** e on 4 bits stored in a 16 bit unsigned => it can store 2 << (e - 1) with e < 16 */
+       // e = (e == 0) ? 1 : 2 << (e - 1);
+        value = m * (0.01 * exp2(e));
+
+        printf("rawData=0x%x, e=%x, m=%x value=%u\n ",rawData, e,m, value);
+    }
+
+    // if device has CTS
+    if(dev.is_CTS){
+        //setRTC(p_data,len);
+        _event_queue->call<GattClientProcess,void,const uint8_t*,uint16_t>(this,&Self::setRTC,p_data,len);   
+        _event_queue->call<GattClientProcess,void,device_t&>(this,&Self::disconnect_peer,dev);
+    }
+
+}
 
 // Stop the discovery process and clean the instance.
 void GattClientProcess::stop_service_discovery()
@@ -300,11 +336,16 @@ void GattClientProcess::print_device_info(device_t &dev){
     printf("dev.connection_handle = %d\n",dev.connection_handle);
     printf("dev.is_CTS = %d\n",dev.is_CTS);
     printf("dev.is_beacon = %d\n",dev.is_beacon);
-    const uint8_t *addr = dev.address;
-    printf("dev.address = %02x:%02x:%02x:%02x:%02x:%02x\n",
-           addr[5], addr[4], addr[3], addr[2], addr[1], addr[0]);
+    printf("dev.address = ");
+    print_addr(dev.address);
     printf("dev.time_value_handle = %d\n",dev.time_value_handle);
     printf("dev.light_value_handle = %d\n",dev.light_value_handle);
     printf("dev.motion_value_handle = %d\n",dev.motion_value_handle);
 }
 
+
+void GattClientProcess::print_addr(const uint8_t *addr)
+{
+    printf("%02x:%02x:%02x:%02x:%02x:%02x\r\n",
+           addr[5], addr[4], addr[3], addr[2], addr[1], addr[0]);
+}

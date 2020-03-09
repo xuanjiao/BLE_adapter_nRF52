@@ -73,20 +73,18 @@ class GattClientProcess : public ble::Gap::EventHandler{
         // Attribute read event handler.
         void when_char_data_read(const GattReadCallbackParams* params);
         
+        void read_value_all_sensors();
+
         void setRTC(const uint8_t *p_data,uint16_t len);
+        
+        void print_addr(const uint8_t *addr);
 
         GattClient *_gattClient;
 
         events::EventQueue *_event_queue;
 
         BLE *_ble_interface;
-
-        // GattAttribute::Handle_t _CTC_handle;
-
-        // Handle of the connection with the peer GATT server.
-        // ble::connection_handle_t _connection_handle;
-
         
-        map<ble::connection_handle_t,device_t> devices;
+        std::map<ble::connection_handle_t,device_t> devices;
 
 };

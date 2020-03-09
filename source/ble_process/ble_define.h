@@ -1,5 +1,5 @@
-#ifndef BLE_DEFINE_H
-#define BLE_DEFINE_H
+#ifndef _BLE_DEFINE_H
+#define _BLE_DEFINE_H
 
 static const UUID UUID_LUX_VALUE_CHAR = UUID("F000aa71-0451-4000-B000-000000000000");
 

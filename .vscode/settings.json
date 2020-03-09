@@ -52,6 +52,12 @@
         "*.tpp": "cpp",
         "ratio": "cpp",
         "chrono": "cpp",
-        "ctime": "cpp"
+        "ctime": "cpp",
+        "condition_variable": "cpp",
+        "list": "cpp",
+        "future": "cpp",
+        "iostream": "cpp",
+        "mutex": "cpp",
+        "thread": "cpp"
     }
 }
