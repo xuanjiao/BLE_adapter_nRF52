@@ -17,7 +17,7 @@
         _count_init_cb++;
     }
 
-    void BLEAdvScanProcess::on_connection_complete(mbed::Callback<void(device_t)> cb)
+    void BLEAdvScanProcess::on_connection_complete(mbed::Callback<void(const ble::ConnectionCompleteEvent&)> cb)
     {
         _post_connection_compete_cb = cb;
     }
@@ -364,9 +364,9 @@
         printf("Connected to ");
         print_address(event.getPeerAddress().data());
         
-        device_t new_device = {};
-        new_device.connection_handle = event.getConnectionHandle();
-        memcpy(new_device.address,event.getPeerAddress().data(),sizeof(new_device.address));
+        // Device_t new_device = {};
+        // new_device.connection_handle = event.getConnectionHandle();
+        // memcpy(new_device.address,event.getPeerAddress().data(),sizeof(new_device.address));
         
         
         //Continue advertise and find other periphrals 
@@ -375,9 +375,8 @@
         _is_connecting = true;
         // Start gatt client service discovery
         if(_post_connection_compete_cb){
-             _post_connection_compete_cb(new_device);
+             _post_connection_compete_cb(event);
         }
-
 
     }
 

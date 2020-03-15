@@ -25,8 +25,6 @@ class BLEAdvScanProcess : public ble::Gap::EventHandler
 {
     typedef BLEAdvScanProcess Self;
 
-    typedef pair<ble::connection_handle_t, device_t> value_type;
-
 private:
 
     events::EventQueue &_event_queue;
@@ -43,7 +41,7 @@ private:
 
     mbed::Callback<void(BLE&,events::EventQueue&)> _post_init_cbs[CALLBACK_NUM_MAX];
 
-    mbed::Callback<void(device_t new_device)> _post_connection_compete_cb;
+    mbed::Callback<void(const ble::ConnectionCompleteEvent&)> _post_connection_compete_cb;
     
     int _count_init_cb;
 
@@ -90,7 +88,7 @@ public:
     void on_init(mbed::Callback<void(BLE&,events::EventQueue&)> cb);
 
     // Subscription to the ble interface connection complete event.
-    void on_connection_complete(mbed::Callback<void(device_t)> cb);
+    void on_connection_complete(mbed::Callback<void(const ble::ConnectionCompleteEvent&)> cb);
 
     
     // Initialize the ble interface, configure it and start advertising.

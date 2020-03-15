@@ -13,6 +13,21 @@
 #include "SEGGER_RTT.h"
 #include "BLEAdvScanProcess.h"
 
+static Sensor_char_uuid_t sensor_char_uuid_list[] = {
+        // sensor type          sensor data uuid                            sensor config uuid
+     {Sensor_type::light    , UUID("F000aa71-0451-4000-B000-000000000000"), UUID("F000aa72-0451-4000-B000-000000000000")},
+     {Sensor_type::movement , UUID("F000aa81-0451-4000-B000-000000000000"), UUID("F000aa82-0451-4000-B000-000000000000")},
+     
+};
+
+static Sensor_cmd_t sensor_cmd_list[] = {
+    {Sensor_type::light     , {0x01}        ,1},
+    {Sensor_type::movement  , {0xFF, 0xFF}  ,2}
+};
+
+// period of requrest measurement result.
+static int PERIOD_READ_BEACON_DATA = 10000;
+
 class GattClientProcess : public ble::Gap::EventHandler{
 
     typedef GattClientProcess Self;
@@ -43,13 +58,13 @@ class GattClientProcess : public ble::Gap::EventHandler{
         void init(BLE &ble_interface, events::EventQueue &event_queue);
 
         // Launch the service and characteristic discovery procedure of a GATT server peer.
-        void start_service_discovery(device_t new_device);
+        void start_service_discovery(const ble::ConnectionCompleteEvent& event);
 
         void stop_service_discovery();
 
-        void print_device_info(device_t &dev);
+        void print_device_info(Device_t &dev);
 
-        void disconnect_peer(device_t &dev);
+        void disconnect_peer(Device_t &dev);
     private:
         /**
          * Helper that construct an event handler from a member function of this
@@ -74,9 +89,16 @@ class GattClientProcess : public ble::Gap::EventHandler{
         void when_char_data_read(const GattReadCallbackParams* params);
         
         void read_value_all_sensors();
+        
+        void read_data_from_handle(ble::connection_handle_t connection_handle, GattAttribute::Handle_t data_handle);
 
         void setRTC(const uint8_t *p_data,uint16_t len);
         
+        // deal with light value
+        void process_light_sensor_data(const uint8_t *p_data);
+
+        void send_command_to_beacon(Device_t &dev);
+
         void print_addr(const uint8_t *addr);
 
         GattClient *_gattClient;
@@ -85,6 +107,5 @@ class GattClientProcess : public ble::Gap::EventHandler{
 
         BLE *_ble_interface;
         
-        std::map<ble::connection_handle_t,device_t> devices;
-
+        std::map<ble::connection_handle_t,Device_t> devices;
 };

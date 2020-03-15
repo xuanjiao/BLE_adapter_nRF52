@@ -1,9 +1,10 @@
 #ifndef SENSOR_TYPE_H
 #define SENSOR_TYPE_H
 #include "stdio.h"
-enum sensor_type{
-    light,
-    accumulate
+
+enum Sensor_type{
+    light = 1,
+    movement = 2
 };
 
 #endif

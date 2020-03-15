@@ -13,7 +13,7 @@
 class MeasurementProcess{
     private:
         const static int CALLBACK_NUM_MAX = 3;
-        mbed::Callback<void(sensor_type type,uint8_t,char*)> _post_update_value_cb[CALLBACK_NUM_MAX];
+        mbed::Callback<void(Sensor_type type,uint8_t,char*)> _post_update_value_cb[CALLBACK_NUM_MAX];
         LDR &_ldr;
         int _callback_num;
         
@@ -23,7 +23,7 @@ class MeasurementProcess{
         _ldr(ldr),_callback_num(0){}
 
         // Store callbacks in callback array.
-        void registerCallback(mbed::Callback<void(sensor_type type,uint8_t,char*)> cb){           
+        void registerCallback(mbed::Callback<void(Sensor_type type,uint8_t,char*)> cb){           
             if(cb){
                 printf("register callback no.%d\r\n",_callback_num+1);
                 if(_callback_num < CALLBACK_NUM_MAX)
@@ -42,7 +42,7 @@ class MeasurementProcess{
             
             time_t _current_time = time(NULL);
             
-            sensor_type type = light;
+            Sensor_type type = light;
 
             char buffer[50];
             // "H"hour(24h)|"M"minute(00-59)|"S"second(00-60)|"d"day(01-31)| "m"month |"Y"years| "u"day of week(1-7) | 

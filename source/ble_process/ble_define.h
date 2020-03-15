@@ -1,9 +1,32 @@
 #ifndef _BLE_DEFINE_H
 #define _BLE_DEFINE_H
 
-static const UUID UUID_LUX_VALUE_CHAR = UUID("F000aa71-0451-4000-B000-000000000000");
+#include "sensor_type.h"
 
- static const UUID UUID_LUX_CONFIG_CHAR = UUID("F000aa72-0451-4000-B000-000000000000");
+typedef struct {
+    Sensor_type type;
+    UUID uuid_data;
+    UUID uuid_config;
+}Sensor_char_uuid_t;
+
+typedef struct {
+    Sensor_type type;
+    uint8_t cmd[2];
+    uint8_t len;
+}Sensor_cmd_t;
+
+typedef struct {
+    Sensor_type type;
+    GattAttribute::Handle_t config_handle;
+    GattAttribute::Handle_t data_handle;
+    int data[5];
+}Sensor_char_t;
+
+typedef struct {
+    Sensor_type type;
+    GattAttribute::Handle_t config_handle;
+    GattAttribute::Handle_t data_handle;
+}Sensor_handle_t;
 
 static const UUID UUID_CURRENT_TIME_CHAR = UUID(GattCharacteristic::UUID_CURRENT_TIME_CHAR);
 
@@ -22,18 +45,34 @@ static const uint16_t MAX_ADVERTISING_PAYLOAD_SIZE = 251;
 
 static const uint16_t CC2650_ADV_UUID = 0xAA80;
 
-typedef struct {
+static const int ADDR_LEN = 6;
+/**
+ *  device infoamation include
+ *  connection handle
+ *  wheather it has current time info/ measurement results
+ *  MAC address xx:xx:xx:xx:xx:xx
+ *  handle sets used to read measurement results.
+ */
+typedef struct de{
     ble::connection_handle_t connection_handle;
-    bool is_CTS;
+    bool is_CTC;
     bool is_beacon;
-    uint8_t address[6];
-    GattAttribute::Handle_t time_value_handle;
-    GattAttribute::Handle_t light_config_handle;
-    GattAttribute::Handle_t light_value_handle;
-    GattAttribute::Handle_t motion_config_handle;
-    GattAttribute::Handle_t motion_value_handle;
+    uint8_t address[ADDR_LEN];
+    int num_of_chars;
+    union {
+        Sensor_char_t sensor_chars[3];
+        GattAttribute::Handle_t time_value_handle;
+    }chars;
+    
+   // target_char_t* sensortag_target_chars; // point point to target char struct array
+    // GattAttribute::Handle_t time_value_handle;
+    // GattAttribute::Handle_t light_config_handle;
+    // GattAttribute::Handle_t light_value_handle;
+    // GattAttribute::Handle_t motion_config_handle;
+    // GattAttribute::Handle_t motion_value_handle;
 
-}device_t;
+}Device_t;
+
 
 typedef struct date_time{
         uint16_t year;

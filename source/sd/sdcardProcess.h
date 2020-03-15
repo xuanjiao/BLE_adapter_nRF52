@@ -15,7 +15,7 @@ using namespace std;
 // log file stores in file system        
 typedef struct log_file
 {
-    sensor_type type;
+    Sensor_type type;
     int index;
     char path[50];
 }log_file;
@@ -38,7 +38,7 @@ class SDcardProcess{
             delete _irq;
         }
         
-        void add_log_file(sensor_type type,int index);
+        void add_log_file(Sensor_type type,int index);
         
         // Pint sd card info: size, read size, program size and eraze size.
         void print_sd_card_info();
@@ -49,7 +49,7 @@ class SDcardProcess{
         bool init_sd_card();
 
         // Write value and timestamp to log file
-        void write_sensor_value_and_time(sensor_type type,uint8_t value,char* time);
+        void write_sensor_value_and_time(Sensor_type type,uint8_t value,char* time);
         
         // Display all data in log file
         // log file in in root directory of sd card.

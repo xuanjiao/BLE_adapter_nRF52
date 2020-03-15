@@ -33,7 +33,7 @@ void EnviromentSensingServer::create_enviroment_sensing_service()
 
 
         // Update light value in ldr gatt characteristic.
-void EnviromentSensingServer::update_sensor_value(sensor_type type,uint8_t value,char* time){
+void EnviromentSensingServer::update_sensor_value(Sensor_type type,uint8_t value,char* time){
     
     switch (type)
     {
@@ -45,8 +45,8 @@ void EnviromentSensingServer::update_sensor_value(sensor_type type,uint8_t value
             sizeof(light)
         );
         break;
-    case accumulate :
-        printf("got accumulate = %x, time %s\r\n",value,time);
+    case movement :
+        printf("got movement = %x, time %s\r\n",value,time);
     default:
         break;
     }

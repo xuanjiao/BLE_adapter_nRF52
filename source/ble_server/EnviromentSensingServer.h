@@ -19,7 +19,7 @@ class EnviromentSensingServer{
         void start(BLE &ble_interface,events::EventQueue& event_queue);
 
         // Update light value in ldr gatt characteristic.
-        void update_sensor_value(sensor_type type,uint8_t light, char* time);
+        void update_sensor_value(Sensor_type type,uint8_t light, char* time);
 
         void create_enviroment_sensing_service();
         

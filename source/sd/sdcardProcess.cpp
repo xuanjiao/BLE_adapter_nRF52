@@ -26,7 +26,7 @@ SDcardProcess::SDcardProcess(events::EventQueue &event_queue)
 
 }
 
-void SDcardProcess::add_log_file(sensor_type type,int index)
+void SDcardProcess::add_log_file(Sensor_type type,int index)
 {
     log_file file;
     file.type = type;
@@ -37,7 +37,7 @@ void SDcardProcess::add_log_file(sensor_type type,int index)
         case light:
             sprintf(file.path,"/%s/light_list_%d.txt",MBED_CONF_APP_FILE_SYSTEM_NAME,index);
             break;
-        case accumulate:
+        case movement:
             sprintf(file.path,"/%s/accumulate_list_%d.txt",MBED_CONF_APP_FILE_SYSTEM_NAME,index);
             break;
         default:
@@ -121,7 +121,7 @@ void SDcardProcess::set_current_log_file(log_file &file){
     _my_log = file;
 }
 
-void SDcardProcess::write_sensor_value_and_time(sensor_type type,uint8_t value,char* time){
+void SDcardProcess::write_sensor_value_and_time(Sensor_type type,uint8_t value,char* time){
     int n;
     FILE *fp;
     char buffer[512];

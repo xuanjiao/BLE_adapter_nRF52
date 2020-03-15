@@ -7,7 +7,7 @@
 I2C i2c(p26,p27); 
 class MeasurementProcess{
     private:
-        //mbed::Callback<void(sensor_type type,uint8_t,char*)> _post_update_value_cb[CALLBACK_NUM_MAX];
+        //mbed::Callback<void(Sensor_type type,uint8_t,char*)> _post_update_value_cb[CALLBACK_NUM_MAX];
         mbed::Callback<void(uint8_t)> _post_update_cb;
      //   LDR &_ldr;
 
