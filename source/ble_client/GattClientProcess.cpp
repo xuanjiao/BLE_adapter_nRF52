@@ -95,25 +95,6 @@ void GattClientProcess::send_command_to_beacon(Device_t &dev){
                 }
             }
 
-            // switch (dev.chars.sensor_chars[i].type)
-            // {
-            //     // send 0x01 to enable light measurement
-            //     case Sensor_type::light: {
-            //          error =_gattClient->write(GattClient::GATT_OP_WRITE_CMD,
-            //             dev.connection_handle,
-            //             dev.chars.sensor_chars[i].config_handle,
-            //             ,&cmd);
-            //             printf("send %x to light config handle %d\n",cmd,dev.chars.sensor_chars[i].config_handle);
-            //         break;
-            //     }
-                   
-            //     case Sensor_type::movement:{
-            //         printf("send to movement config handle %d\n",dev.chars.sensor_chars[i].config_handle);
-                    
-            //         break;
-            //     }
-                       
-            // }
          }
             if(error){
                 printf("Error %s during read write ble attributes.\n",BLE::errorToString(error));
