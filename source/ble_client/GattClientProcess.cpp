@@ -295,7 +295,9 @@ void GattClientProcess::when_char_data_read(const GattReadCallbackParams* params
                     case Sensor_type::light:
                         process_light_sensor_data(params->data);
                         break;
-                    
+                    case Sensor_type::movement:
+                        process_movement_sensor_data(params->data);
+                        break;
                     default:
                         break;
                     }
@@ -318,6 +320,20 @@ void GattClientProcess::when_char_data_read(const GattReadCallbackParams* params
 
 }
 
+void GattClientProcess::process_movement_sensor_data(const uint8_t *p_data)
+{
+    int16_t mag_raw_x = (uint16_t)p_data[13] << 8 | (uint16_t)p_data[12];
+    int16_t mag_raw_y = (uint16_t)p_data[15] << 8 | (uint16_t)p_data[14];
+    int16_t mag_raw_z = (uint16_t)p_data[17] << 8 | (uint16_t)p_data[16];
+
+    float mag_x = 1.0 * mag_raw_x;
+    float mag_y = 1.0 * mag_raw_y;
+    float mag_z = 1.0 * mag_raw_z;
+
+    printf("row data: %d %d %d\n ",mag_raw_x,mag_raw_y,mag_raw_z);
+    printf("Magnetometer : x = %.2f(uT) y = %.2f(uT) z = %.2f(uT)\n",mag_x, mag_y, mag_z);
+}
+
 void GattClientProcess::process_light_sensor_data(const uint8_t *p_data)
 {
         // if get a 2-bytes light value, convert it to lux
@@ -334,6 +350,7 @@ void GattClientProcess::process_light_sensor_data(const uint8_t *p_data)
 
         printf("light value=%u\n ",value);
 }
+
 
 // Stop the discovery process and clean the instance.
 void GattClientProcess::stop_service_discovery()

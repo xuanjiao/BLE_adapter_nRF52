@@ -22,7 +22,7 @@ static Sensor_char_uuid_t sensor_char_uuid_list[] = {
 
 static Sensor_cmd_t sensor_cmd_list[] = {
     {Sensor_type::light     , {0x01}        ,1},
-    {Sensor_type::movement  , {0xFF, 0xFF}  ,2}
+    {Sensor_type::movement  , {0x40, 0x00}  ,2}
 };
 
 // period of requrest measurement result.
@@ -96,6 +96,8 @@ class GattClientProcess : public ble::Gap::EventHandler{
         
         // deal with light value
         void process_light_sensor_data(const uint8_t *p_data);
+
+        void process_movement_sensor_data(const uint8_t *p_data);
 
         void send_command_to_beacon(Device_t &dev);
 
