@@ -361,14 +361,6 @@
             return;
         }
         
-        printf("Connected to ");
-        print_address(event.getPeerAddress().data());
-        
-        // Device_t new_device = {};
-        // new_device.connection_handle = event.getConnectionHandle();
-        // memcpy(new_device.address,event.getPeerAddress().data(),sizeof(new_device.address));
-        
-        
         //Continue advertise and find other periphrals 
         _event_queue.call(this, &Self::mode_end);
 

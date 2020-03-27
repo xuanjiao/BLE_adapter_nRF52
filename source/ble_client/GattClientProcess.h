@@ -1,32 +1,19 @@
-#include "BLE.h"
-#include "gap/Gap.h"
-#include "Gap.h"
-#include "GattClient.h"
-#include "GattCharacteristic.h"
-#include "GapAdvertisingParams.h"
-#include "GapAdvertisingData.h"
-#include "DiscoveredService.h"
-#include "DiscoveredCharacteristic.h"
-#include "CharacteristicDescriptorDiscovery.h"
-#include "GattAttribute.h"
 #include "ble_define.h"
 #include "SEGGER_RTT.h"
 #include "BLEAdvScanProcess.h"
+#include "Callback.h"
 
 static Sensor_char_uuid_t sensor_char_uuid_list[] = {
         // sensor type          sensor data uuid                            sensor config uuid
-     {Sensor_type::light    , UUID("F000aa71-0451-4000-B000-000000000000"), UUID("F000aa72-0451-4000-B000-000000000000")},
-     {Sensor_type::movement , UUID("F000aa81-0451-4000-B000-000000000000"), UUID("F000aa82-0451-4000-B000-000000000000")},
+     {Sensor_type::light    ,UUID("F000aa71-0451-4000-B000-000000000000"), UUID("F000aa72-0451-4000-B000-000000000000")},
+     {Sensor_type::magnetometer ,UUID("F000aa81-0451-4000-B000-000000000000"), UUID("F000aa82-0451-4000-B000-000000000000")},
      
 };
 
 static Sensor_cmd_t sensor_cmd_list[] = {
     {Sensor_type::light     , {0x01}        ,1},
-    {Sensor_type::movement  , {0x40, 0x00}  ,2}
+    {Sensor_type::magnetometer  , {0x40, 0x00}  ,2}
 };
-
-// period of requrest measurement result.
-static int PERIOD_READ_BEACON_DATA = 10000;
 
 class GattClientProcess : public ble::Gap::EventHandler{
 
@@ -43,7 +30,8 @@ class GattClientProcess : public ble::Gap::EventHandler{
         GattClientProcess():
             _gattClient(NULL),
             _event_queue(NULL),
-            _ble_interface(NULL)
+            _ble_interface(NULL),
+            _count_cb(0)
             // _CTC_handle(0),
             // _connection_handle(0)
             {
@@ -61,6 +49,8 @@ class GattClientProcess : public ble::Gap::EventHandler{
         void start_service_discovery(const ble::ConnectionCompleteEvent& event);
 
         void stop_service_discovery();
+
+        void on_read_sensor_value_complete_cb(mbed::Callback<void(Device_t&)> cb);
 
         void print_device_info(Device_t &dev);
 
@@ -94,14 +84,18 @@ class GattClientProcess : public ble::Gap::EventHandler{
 
         void setRTC(const uint8_t *p_data,uint16_t len);
         
-        // deal with light value
-        void process_light_sensor_data(const uint8_t *p_data);
+        // deal with light value and store them in buffer
+        void process_light_sensor_data(const uint8_t *p_data, Sensor_char_t* p_char);
 
-        void process_movement_sensor_data(const uint8_t *p_data);
+        void process_magnetometer_sensor_data(const uint8_t *p_data, Sensor_char_t* p_char);
 
         void send_command_to_beacon(Device_t &dev);
 
         void print_addr(const uint8_t *addr);
+
+        mbed::Callback<void(Device_t&)> _post_read_sensor_value_complete_cb[2];
+        
+        int _count_cb;
 
         GattClient *_gattClient;
 
@@ -110,4 +104,9 @@ class GattClientProcess : public ble::Gap::EventHandler{
         BLE *_ble_interface;
         
         std::map<ble::connection_handle_t,Device_t> devices;
+
+        // period of requrest measurement result.
+        static const int PERIOD_READ_BEACON_DATA = 10000;
+
+        static const int CALLBACK_NUM_MAX = 2;
 };

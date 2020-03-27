@@ -2,31 +2,24 @@
 #define _BLE_DEFINE_H
 
 #include "sensor_type.h"
+#include "UUID.h"
+#include "GattAttribute.h"
+#include "BLE.h"
+#include "gap/Gap.h"
+#include "Gap.h"
+#include "GattClient.h"
+#include "GattCharacteristic.h"
+#include "GapAdvertisingParams.h"
+#include "GapAdvertisingData.h"
+#include "DiscoveredService.h"
+#include "DiscoveredCharacteristic.h"
+#include "CharacteristicDescriptorDiscovery.h"
 
-typedef struct {
-    Sensor_type type;
-    UUID uuid_data;
-    UUID uuid_config;
-}Sensor_char_uuid_t;
+static const int MAX_SENSOR_DATA_LEN = 3;
 
-typedef struct {
-    Sensor_type type;
-    uint8_t cmd[2];
-    uint8_t len;
-}Sensor_cmd_t;
+static const int MAX_SENSOR_CMD_LEN = 2;
 
-typedef struct {
-    Sensor_type type;
-    GattAttribute::Handle_t config_handle;
-    GattAttribute::Handle_t data_handle;
-    int data[5];
-}Sensor_char_t;
-
-typedef struct {
-    Sensor_type type;
-    GattAttribute::Handle_t config_handle;
-    GattAttribute::Handle_t data_handle;
-}Sensor_handle_t;
+static const int MAX_TYPE_NAME_LEN = 5;
 
 static const UUID UUID_CURRENT_TIME_CHAR = UUID(GattCharacteristic::UUID_CURRENT_TIME_CHAR);
 
@@ -46,6 +39,34 @@ static const uint16_t MAX_ADVERTISING_PAYLOAD_SIZE = 251;
 static const uint16_t CC2650_ADV_UUID = 0xAA80;
 
 static const int ADDR_LEN = 6;
+
+
+typedef struct {
+    Sensor_type type;
+    UUID uuid_data;
+    UUID uuid_config;
+}Sensor_char_uuid_t;
+
+typedef struct {
+    Sensor_type type;
+    uint8_t cmd[MAX_SENSOR_CMD_LEN];
+    uint8_t len;
+}Sensor_cmd_t;
+
+typedef struct {
+    Sensor_type type;
+    GattAttribute::Handle_t config_handle;
+    GattAttribute::Handle_t data_handle;
+    int16_t data[MAX_SENSOR_DATA_LEN];
+    uint8_t len;
+}Sensor_char_t;
+
+typedef struct {
+    Sensor_type type;
+    GattAttribute::Handle_t config_handle;
+    GattAttribute::Handle_t data_handle;
+}Sensor_handle_t;
+
 /**
  *  device infoamation include
  *  connection handle
@@ -53,26 +74,17 @@ static const int ADDR_LEN = 6;
  *  MAC address xx:xx:xx:xx:xx:xx
  *  handle sets used to read measurement results.
  */
-typedef struct de{
+typedef struct {
     ble::connection_handle_t connection_handle;
     bool is_CTC;
     bool is_beacon;
-    uint8_t address[ADDR_LEN];
+    uint8_t address[ADDR_LEN+1];
     int num_of_chars;
     union {
         Sensor_char_t sensor_chars[3];
         GattAttribute::Handle_t time_value_handle;
     }chars;
-    
-   // target_char_t* sensortag_target_chars; // point point to target char struct array
-    // GattAttribute::Handle_t time_value_handle;
-    // GattAttribute::Handle_t light_config_handle;
-    // GattAttribute::Handle_t light_value_handle;
-    // GattAttribute::Handle_t motion_config_handle;
-    // GattAttribute::Handle_t motion_value_handle;
-
 }Device_t;
-
 
 typedef struct date_time{
         uint16_t year;

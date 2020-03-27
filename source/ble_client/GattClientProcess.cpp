@@ -20,14 +20,22 @@ void GattClientProcess::init(BLE &ble_interface, events::EventQueue &event_queue
     _gattClient->onDataRead(as_cb(&Self::when_char_data_read));
 }
 
+void GattClientProcess::on_read_sensor_value_complete_cb(mbed::Callback<void(Device_t&)> cb){
+    if(_count_cb < CALLBACK_NUM_MAX){
+        _post_read_sensor_value_complete_cb[_count_cb] = cb;
+        _count_cb++;
+    }
+}
+
 void GattClientProcess::start_service_discovery(const ble::ConnectionCompleteEvent& event)
 {
     // Create a new device structure and store address and connection handle.
-    Device_t new_device = {0};
+    Device_t new_device = { };
     new_device.connection_handle = event.getConnectionHandle();
-    memcpy(new_device.address,event.getPeerAddress().data(),sizeof(new_device.address));
-        
-       
+    // copy 6 byte address
+    memcpy(new_device.address,event.getPeerAddress().data(),ADDR_LEN);   
+    new_device.address[ADDR_LEN+1] = '\0';
+    
     devices.insert(make_pair(new_device.connection_handle,new_device));
     printf("Get connection handle %d Discovering service...",new_device.connection_handle);
 
@@ -71,6 +79,7 @@ void GattClientProcess::when_service_discovery_ends(const ble::connection_handle
         }
 
     }else if(dev.is_beacon){
+
         // send command to beacons and periodiclly requirest measurement value;
         _event_queue->call<Self,void,Device_t&>(this,&Self::send_command_to_beacon,dev);
         // read first characteristic
@@ -105,8 +114,8 @@ void GattClientProcess::send_command_to_beacon(Device_t &dev){
 void GattClientProcess::read_data_from_handle(ble::connection_handle_t connection_handle, GattAttribute::Handle_t data_handle){
         printf("read data from characteristic data handle %d",data_handle);
         ble_error_t error = _gattClient->read(
-            connection_handle,                       // connection handle
-            data_handle,    // attribute handle
+            connection_handle,        // connection handle
+            data_handle,              // attribute handle
             0); // offset
 
         if(error){
@@ -140,17 +149,6 @@ void GattClientProcess::read_value_all_sensors(){
     }
 }
 
-// // The GattClient invokes this function when a service has been discovered.
-// void GattClientProcess::when_service_discovered(const DiscoveredService* discovered_service)
-// {
-//     printf("Service discovered: uuid: ");
-//     print_uuid(discovered_service->getUUID());
-    
-//     int start_handle = discovered_service->getStartHandle();
-//     int end_handle = discovered_service->getEndHandle();
-//     printf("start handle %d, end handle %d\n",start_handle,end_handle);
-// }
-
 void GattClientProcess::when_characteristic_discovered(const DiscoveredCharacteristic* discovered_characteristic)
 {
     // uint16_t uuid = *((const uint16_t*)discovered_characteristic->getUUID().getBaseUUID());
@@ -177,7 +175,6 @@ void GattClientProcess::when_characteristic_discovered(const DiscoveredCharacter
                 // if sensor type exist, store config handle of this sensor type
                  if (dev.chars.sensor_chars[j].type == sensor_char_uuid_list[i].type){
                     dev.chars.sensor_chars[j].config_handle = discovered_characteristic->getValueHandle();                    
-                    print_device_info(dev);    
                     return;      
                 }
             }
@@ -191,8 +188,6 @@ void GattClientProcess::when_characteristic_discovered(const DiscoveredCharacter
 
         }
 
-        
-
         // if it is a target data characteristic, check uuid list and get a sensor type
         if(uuid == sensor_char_uuid_list[i].uuid_data){
             
@@ -205,51 +200,26 @@ void GattClientProcess::when_characteristic_discovered(const DiscoveredCharacter
                     return;
                 } 
             }
-                
+
+
             // if this is a new sensor type
             dev.chars.sensor_chars[dev.num_of_chars].type = sensor_char_uuid_list[i].type;   
             dev.chars.sensor_chars[dev.num_of_chars].data_handle =  discovered_characteristic->getValueHandle(); 
+            
+            print_device_info(dev);
+            
             dev.num_of_chars++;
             return;
 
         }
-        
-   
     }
-
-    /*
-    //peripherals.insert(new value_type());
-    if(uuid == UUID_CURRENT_TIME_CHAR){
-
-        printf("**Current time Characteristic found. uuid: ");
-        print_uuid(uuid);
-         // find device object with related connectionhandle
-        Device_t &dev = devices[connHandle];
-        dev.time_value_handle = discovered_characteristic->getValueHandle();   // store handle in object
-        dev.is_CTC = true;          // peer is a device with CTS 
-        
-    }else if( uuid == UUID_LUX_VALUE_CHAR){
-        
-        printf("**light value char found. uuid:\n");
-        print_uuid(uuid);
-        Device_t &dev = devices[connHandle];
-        dev.light_value_handle = discovered_characteristic->getValueHandle();
-        dev.is_beacon = true;       // peer is a beacon
-    }else if(uuid == UUID_LUX_CONFIG_CHAR){
-                
-        printf("**light config char found. uuid:\n");
-        print_uuid(uuid);  
-        Device_t &dev = devices[connHandle];
-        dev.light_config_handle = discovered_characteristic->getValueHandle();
-        dev.is_beacon = true;       // peer is a beacon
-    }   
-    */
 }
 
 
 
 void GattClientProcess::when_char_data_read(const GattReadCallbackParams* params)
 {
+ 
     // get attribute handle, data and data length 
     GattAttribute::Handle_t data_handle = params->handle;
     ble::connection_handle_t connHandle = params->connHandle;
@@ -285,70 +255,71 @@ void GattClientProcess::when_char_data_read(const GattReadCallbackParams* params
     }
 
     if(dev.is_beacon){
-        
         // check what sensor type does this handle related to
         for(size_t i = 0; i < dev.num_of_chars;i++){
-                if(data_handle == dev.chars.sensor_chars[i].data_handle){
-
-                    switch (dev.chars.sensor_chars[i].type)
+                Sensor_char_t* sensor_char = &dev.chars.sensor_chars[i];
+                if(data_handle == sensor_char->data_handle){
+                    switch (sensor_char->type)
                     {
                     case Sensor_type::light:
-                        process_light_sensor_data(params->data);
+                        process_light_sensor_data(params->data,sensor_char);
                         break;
-                    case Sensor_type::movement:
-                        process_movement_sensor_data(params->data);
+                    case Sensor_type::magnetometer:
+                        process_magnetometer_sensor_data(params->data,sensor_char);
                         break;
                     default:
                         break;
                     }
-                    
-                    
+
                     if(i < dev.num_of_chars - 1 ){
                         // if it is not the last characteristic, read next characteristic.
                        _event_queue->call<Self,void,ble::connection_handle_t,GattAttribute::Handle_t>(
                                 this,&Self::read_data_from_handle,dev.connection_handle,dev.chars.sensor_chars[i+1].data_handle);
                     }else{
-                        // if it is the last characteristic, wait a period and read next characteristic.
+                        
+                        // if it is the last characteristic, write data to sd card, then wait a period and read next characteristic.
+                        printf("send data to SD card: ");
+                        for(int i = 0; i < sensor_char->len;i++){
+                            printf("%d ",sensor_char->data[i]);
+                        }
+                        printf("\n");
+                        for(int i = 0; i < _count_cb;i++){
+                            _post_read_sensor_value_complete_cb[i](dev);
+                        }
+                        printf("Finish read all characters.\n");
+                        
                         _event_queue->call_in<Self,void,ble::connection_handle_t,GattAttribute::Handle_t>(
-                            PERIOD_READ_BEACON_DATA,this,&Self::read_data_from_handle,dev.connection_handle,dev.chars.sensor_chars[0].data_handle);
-    
-                    }
+                            PERIOD_READ_BEACON_DATA,this,&Self::read_data_from_handle,dev.connection_handle,dev.chars.sensor_chars[0].data_handle);  
 
+                    }
             }
         }
     }
 
 }
 
-void GattClientProcess::process_movement_sensor_data(const uint8_t *p_data)
+void GattClientProcess::process_magnetometer_sensor_data(const uint8_t *p_data,Sensor_char_t* p_char)
 {
-    int16_t mag_raw_x = (uint16_t)p_data[13] << 8 | (uint16_t)p_data[12];
-    int16_t mag_raw_y = (uint16_t)p_data[15] << 8 | (uint16_t)p_data[14];
-    int16_t mag_raw_z = (uint16_t)p_data[17] << 8 | (uint16_t)p_data[16];
-
-    float mag_x = 1.0 * mag_raw_x;
-    float mag_y = 1.0 * mag_raw_y;
-    float mag_z = 1.0 * mag_raw_z;
-
-    printf("row data: %d %d %d\n ",mag_raw_x,mag_raw_y,mag_raw_z);
-    printf("Magnetometer : x = %.2f(uT) y = %.2f(uT) z = %.2f(uT)\n",mag_x, mag_y, mag_z);
+    p_char->data[0] = (uint16_t)p_data[13] << 8 | (uint16_t)p_data[12];
+    p_char->data[1] = (uint16_t)p_data[15] << 8 | (uint16_t)p_data[14];
+    p_char->data[2] = (uint16_t)p_data[17] << 8 | (uint16_t)p_data[16];
+    p_char->len = 3;
 }
 
-void GattClientProcess::process_light_sensor_data(const uint8_t *p_data)
+void GattClientProcess::process_light_sensor_data(const uint8_t *p_data,Sensor_char_t* p_char)
 {
         // if get a 2-bytes light value, convert it to lux
-        uint16_t rawData, e,m;
-        uint16_t value;
-                            // byte 1 is MSB, byte 0 is LSB
-        rawData = (uint16_t)p_data[1] << 8 | (uint16_t)p_data[0];
+        int16_t rawData, e,m;
+
+        // byte 1 is MSB, byte 0 is LSB
+        rawData = (int16_t)p_data[1] << 8 | (int16_t)p_data[0];
         m = rawData & 0x0FFF;
         e = (rawData & 0xF000) >> 12;
 
         /** e on 4 bits stored in a 16 bit unsigned => it can store 2 << (e - 1) with e < 16 */
         // e = (e == 0) ? 1 : 2 << (e - 1);
-        value = m * (0.01 * exp2(e));
-
-        printf("light value=%u\n ",value);
+        p_char->data[0] = m * (0.01 * exp2(e));
+        p_char->len = 1;
 }
 
 
@@ -466,7 +437,7 @@ FunctionPointerWithContext<Arg> GattClientProcess::as_cb(void (Self::*member)(Ar
 
 
 void GattClientProcess::print_device_info(Device_t &dev){
-    printf("dev.connection_handle = %d\n",dev.connection_handle);
+    printf("\ndevice info: \ndev.connection_handle = %d\n",dev.connection_handle);
     printf("dev.is_CTC = %d\n",dev.is_CTC);
     printf("dev.is_beacon = %d\n",dev.is_beacon);
     printf("dev.num_of_chars = %d\n",dev.num_of_chars);
@@ -487,6 +458,7 @@ void GattClientProcess::print_device_info(Device_t &dev){
                                     dev.chars.sensor_chars[i].config_handle);
         }
     }
+    printf("\n");
 }
 
 

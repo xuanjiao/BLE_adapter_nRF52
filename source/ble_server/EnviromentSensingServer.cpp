@@ -45,8 +45,8 @@ void EnviromentSensingServer::update_sensor_value(Sensor_type type,uint8_t value
             sizeof(light)
         );
         break;
-    case movement :
-        printf("got movement = %x, time %s\r\n",value,time);
+    case magnetometer :
+        printf("got magnetometer = %x, time %s\r\n",value,time);
     default:
         break;
     }

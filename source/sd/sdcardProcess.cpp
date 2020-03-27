@@ -15,7 +15,7 @@ SDcardProcess::SDcardProcess(events::EventQueue &event_queue)
     _bd = BlockDevice::get_default_instance();
 
     // Set file system name
-    _fs = new FATFileSystem(MBED_CONF_APP_FILE_SYSTEM_NAME);
+    _fs = new FATFileSystem(FILE_SYSTEM_NAME);
 
     // Set button 1 as erase button.
     _irq = new InterruptIn(MBED_CONF_APP_PIN_ERASE_SD_CARD);
@@ -24,6 +24,61 @@ SDcardProcess::SDcardProcess(events::EventQueue &event_queue)
         event_queue.event(this,&Self::remove_all_log_file)
     );
 
+}
+
+void SDcardProcess::record_beacon(Device_t &dev){
+    
+    for( int i = 0; i <dev.num_of_chars;i++){
+        
+        //record each chracteristic in a file
+        Sensor_char_t* sensor_char = &dev.chars.sensor_chars[i];
+        char file_path[50];
+
+        time_t current_time = time(NULL);
+         
+        char date[15];
+        char complete_time[50];
+         // "H"hour(24h)|"M"minute(00-59)|"S"second(00-60)|"d"day(01-31)| "m"month |"Y"years| "u"day of week(1-7) | 
+        strftime(complete_time,sizeof(complete_time),"%H:%M:%S %d-%m-%Y day of week %u",localtime(&current_time));
+        strftime(date,sizeof(date),"%d-%m-%Y",localtime(&current_time));
+
+        // consruct file name "/<file system name>/<sensor type>_<first byte of address>_<date>"
+        sprintf(file_path,"/%s/%.2d_%s_%s.txt",
+                    FILE_SYSTEM_NAME,   
+                    dev.address[0],                  // first byte address
+                    sensor_types[sensor_char->type], // sensor type
+                    date);
+        
+        printf("log data in file[%s]: \n",file_path);
+        for(int i = 0; i < sensor_char->len;i++){
+            printf("%d ",sensor_char->data[i]);
+        }
+        // open file
+        FILE* fp;
+        if(( fp = fopen(file_path,"a+"))==NULL){
+            printf("Error %d during open file %s : %s\n",-errno,file_path,strerror(errno));
+            return;
+        }
+        // write data in file
+        for(int i = 0; i < sensor_char->len;i++){
+            if(fprintf(fp,"%d ",sensor_char->data[i])<0)
+                printf("Error %d during write data to file %s: %s.\n",-errno,file_path,strerror(errno));
+        }
+        fputc('\n',fp);
+       
+        // close file
+        if( fclose(fp)<0){
+            printf("Error %d during closing file: %s.\n",-errno,strerror(errno));
+            return;
+        }
+        printf("OK.\n");
+             
+    }
+   
+
+
+   
+    
 }
 
 void SDcardProcess::add_log_file(Sensor_type type,int index)
@@ -35,13 +90,13 @@ void SDcardProcess::add_log_file(Sensor_type type,int index)
     switch (type)
     {
         case light:
-            sprintf(file.path,"/%s/light_list_%d.txt",MBED_CONF_APP_FILE_SYSTEM_NAME,index);
+            sprintf(file.path,"/%s/light_list_%d.txt",FILE_SYSTEM_NAME,index);
             break;
-        case movement:
-            sprintf(file.path,"/%s/accumulate_list_%d.txt",MBED_CONF_APP_FILE_SYSTEM_NAME,index);
+        case Sensor_type::magnetometer:
+            sprintf(file.path,"/%s/accumulate_list_%d.txt",FILE_SYSTEM_NAME,index);
             break;
         default:
-            sprintf(file.path,"/%s/unknown_list_%d.txt",MBED_CONF_APP_FILE_SYSTEM_NAME,index);
+            sprintf(file.path,"/%s/unknown_list_%d.txt",FILE_SYSTEM_NAME,index);
             break;
     }  
 
@@ -194,7 +249,7 @@ bool SDcardProcess::display_root_directory()
     char root_path[PATH_LEN_MAX]="";
     
     // Construct root directory eg./fs/
-    sprintf(root_path,"/%s/",MBED_CONF_APP_FILE_SYSTEM_NAME);
+    sprintf(root_path,"/%s/",FILE_SYSTEM_NAME);
 
     // Display the root directory
 	printf("Opening the root directory... ");

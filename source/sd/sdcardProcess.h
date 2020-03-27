@@ -8,10 +8,11 @@
 #include "events/EventQueue.h"
 #include "sensor_type.h"
 #include <vector>
+#include "ble_define.h"
 
 using namespace std;
 
-
+static const char* FILE_SYSTEM_NAME = "fs";
 // log file stores in file system        
 typedef struct log_file
 {
@@ -37,6 +38,8 @@ class SDcardProcess{
             delete _bd;
             delete _irq;
         }
+
+        void record_beacon(Device_t &dev);
         
         void add_log_file(Sensor_type type,int index);
         
