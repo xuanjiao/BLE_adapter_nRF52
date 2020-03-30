@@ -17,8 +17,6 @@ int main(){
     SDcardProcess sd(event_queue);
 
     sd.init_sd_card();
-    sd.add_log_file(light,1);
-
 
     BLEAdvScanProcess ble_process(event_queue,ble_interface);
     EnviromentSensingServer server;

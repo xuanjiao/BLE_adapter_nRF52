@@ -13,13 +13,8 @@
 using namespace std;
 
 static const char* FILE_SYSTEM_NAME = "fs";
+      
 // log file stores in file system        
-typedef struct log_file
-{
-    Sensor_type type;
-    int index;
-    char path[50];
-}log_file;
 
 class SDcardProcess{
     typedef SDcardProcess Self;
@@ -28,67 +23,55 @@ class SDcardProcess{
 
         // Get a gefault Block device(SD card) object and create a file system object for it.
         // The SPI connection of sd card can be configure in mbed_app.json file.
-        SDcardProcess(events::EventQueue &event_queue);
+        SDcardProcess(
+            events::EventQueue &event_queue
+        ):  _file_system(FILE_SYSTEM_NAME),
+            _erase_button(BUTTON2),
+            _ready_to_write(false),
+            _event_queue(&event_queue),
+            _block_device(NULL)
+        {
+            // Use button to reformat sd card.
+            _erase_button.fall(
+                event_queue.event(this,&Self::reformat_sd_card)
+            );
+        }
 
         SDcardProcess();
 
         ~SDcardProcess()
         {
-            delete _fs;
-            delete _bd;
-            delete _irq;
+            delete _block_device;
+            // delete _fs;
+            // delete _bd;
+            // delete _irq;
         }
 
         void record_beacon(Device_t &dev);
         
-        void add_log_file(Sensor_type type,int index);
+        void reformat_sd_card();
         
         // Pint sd card info: size, read size, program size and eraze size.
         void print_sd_card_info();
 
-        bool remove_all_log_file();
-
         // Mount the file system. Reformat FAT file system if no file systen found.
-        bool init_sd_card();
+        void init_sd_card();
 
-        // Write value and timestamp to log file
-        void write_sensor_value_and_time(Sensor_type type,uint8_t value,char* time);
-        
-        // Display all data in log file
-        // log file in in root directory of sd card.
-        // file name can be difine in mbed_app.json file
-        bool read_log_file();
-
-        // Unmount sd card.
-        bool close_sd_card();
+       // Unmount sd card.
+        void unmound_sd_card();
 
         // Display file name and file type in root system.
-        bool display_root_directory();
+        void display_root_directory();
 
     private:
-        FILE* open_file(const char *file_path, const char *mode);
+        bool _ready_to_write;
 
-        void set_current_log_file(log_file &file);
-        
-        events::EventQueue *_event_queue;
+        events::EventQueue* _event_queue;
 
-        BlockDevice *_bd;
-        
-        FATFileSystem *_fs;
-        
-        bool close_file(FILE *fp);
-        
-        const static int PATH_LEN_MAX = 50;
-        
-        const static int FILE_NUM_MAX = 5;
+        FATFileSystem _file_system;
 
-        
-        InterruptIn *_irq;    
-        // Open file and return a file pointer.
-        
-     
-        vector<log_file> _log_files;
+        BlockDevice *_block_device;
 
-        log_file _my_log;
-
+        InterruptIn _erase_button;  
+        
 };
