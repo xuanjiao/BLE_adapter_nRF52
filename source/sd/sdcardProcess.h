@@ -28,7 +28,6 @@ class SDcardProcess{
         ):  _file_system(FILE_SYSTEM_NAME),
             _erase_button(BUTTON2),
             _ready_to_write(false),
-            _event_queue(&event_queue),
             _block_device(NULL)
         {
             // Use button to reformat sd card.
@@ -65,8 +64,6 @@ class SDcardProcess{
 
     private:
         bool _ready_to_write;
-
-        events::EventQueue* _event_queue;
 
         FATFileSystem _file_system;
 

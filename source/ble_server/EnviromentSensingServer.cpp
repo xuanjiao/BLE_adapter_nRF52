@@ -13,15 +13,15 @@ void EnviromentSensingServer::start(BLE &ble_interface,events::EventQueue& event
 
 void EnviromentSensingServer::create_enviroment_sensing_service()
 {
-    GattCharacteristic *characteristics[] = {
-        &_light_char,
-        &_acc_char
-    };
+    // GattCharacteristic *characteristics[] = {
+    //    &chars[Sensor_type::light],
+    //    &chars[Sensor_type::magnetometer]
+    // };
 
      // Register service.
     printf("Adding Enviroment sensing service.\r\n");
     GattService service(GattService::UUID_ENVIRONMENTAL_SERVICE,
-                                    characteristics,
+                                    (GattCharacteristic**)char_list,
                                     NUM_OF_CHAR);
 
     ble_error_t error = _gattServer->addService(service);
@@ -51,5 +51,4 @@ void EnviromentSensingServer::update_sensor_value(Sensor_type type,uint8_t value
         break;
     }
     
-
 }
