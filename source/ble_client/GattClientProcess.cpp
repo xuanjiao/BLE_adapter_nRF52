@@ -250,7 +250,7 @@ void GattClientProcess::when_char_data_read(const GattReadCallbackParams* params
     if(dev.is_CTC){
         //setRTC(p_data,len);
         _event_queue->call<GattClientProcess,void,const uint8_t*,uint16_t>(this,&Self::setRTC,p_data,len);   
-        _event_queue->call<GattClientProcess,void,Device_t&>(this,&Self::disconnect_peer,dev);
+        //_event_queue->call<GattClientProcess,void,Device_t&>(this,&Self::disconnect_peer,dev);
         return;
     }
 

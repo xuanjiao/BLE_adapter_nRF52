@@ -16,18 +16,17 @@ static const uint16_t uuids[] = {
     0xA002     // magnetometer 
 };
 
-static SensorCharacteristic* char_list[] = {
-    new SensorCharacteristic(uuids[Sensor_type::light]),
-    new SensorCharacteristic(uuids[Sensor_type::magnetometer])
-};
+static uint16_t file_char_uuid_base = 0xB100;
+
+static const int num_of_file = 2;
+
+static const uint16_t file_service_uuid = 0xB000;
 
 class EnviromentSensingServer{
     typedef EnviromentSensingServer Self;
 
     public:
-        EnviromentSensingServer():
-            _light_char(UUID_LIGHT_CHAR),
-            _acc_char(UUID_ACCELERATE_CHAR){}
+        EnviromentSensingServer(){}
 
         void start(BLE &ble_interface,events::EventQueue& event_queue);
 
@@ -36,31 +35,29 @@ class EnviromentSensingServer{
 
         void create_enviroment_sensing_service();
 
-        ~EnviromentSensingServer(){
-            for(int i = 0; i < sizeof(char_list);i++){
-                delete char_list[i];
-            }
-        }
+        void create_file_transfer_service();
+        
+        void when_data_read_by_client(const GattReadCallbackParams* params);
+        // ~EnviromentSensingServer(){
+        //     for(size_t i = 0; i < sizeof(bs_char_list);i++){
+        //         delete bs_char_list[i];
+        //     }
+        // }
 
         private:
-        
-        const static uint16_t UUID_LIGHT_CHAR = 0xA001;
-        const static uint16_t UUID_ACCELERATE_CHAR = 0xA00;
 
-
-        const static int BLE_LDR_VALUE_SIZE = 1;
-
-        const static int NUM_OF_CHAR = 1;
+        // GattCharacteristic** head_char;
 
         GattServer *_gattServer;
+
+        GattCharacteristic* chars[num_of_file];
 
         BLE *_ble_interface;
 
         events::EventQueue *_event_queue;
 
-        SensorCharacteristic _light_char;
-        SensorCharacteristic _acc_char;
-
+         template<typename Arg>
+        FunctionPointerWithContext<Arg> as_cb(void (Self::*member)(Arg));
 };
 
 #endif
