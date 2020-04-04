@@ -1,5 +1,6 @@
 {
     "config":{
+
         "log_file_name": {
             "marco_name":"LOG_FILE_NAME",
             "value":"\"light_log.txt\""

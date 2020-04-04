@@ -9,6 +9,8 @@
 #include "sensor_type.h"
 #include "UUID.h"
 #include "SensorCharacteristic.h"
+#include "platform/SharedPtr.h"
+#include "FileTransferCharacteristic.h"
 
 static const uint16_t uuids[] = {
     0xA000,     // unknown
@@ -21,6 +23,11 @@ static uint16_t file_char_uuid_base = 0xB100;
 static const int num_of_file = 2;
 
 static const uint16_t file_service_uuid = 0xB000;
+
+static File_st files[num_of_file] = {
+    {0,"/fs/test_1.txt"},
+    {0,"/fs/test_2.txt"}
+};
 
 class EnviromentSensingServer{
     typedef EnviromentSensingServer Self;
@@ -37,6 +44,8 @@ class EnviromentSensingServer{
 
         void create_file_transfer_service();
         
+        void when_receive_read_request(GattReadAuthCallbackParams* params);
+
         void when_data_read_by_client(const GattReadCallbackParams* params);
         // ~EnviromentSensingServer(){
         //     for(size_t i = 0; i < sizeof(bs_char_list);i++){
@@ -44,9 +53,11 @@ class EnviromentSensingServer{
         //     }
         // }
 
+    
         private:
-
+        
         // GattCharacteristic** head_char;
+        // SharedPtr<Block> readBlock;
 
         GattServer *_gattServer;
 
