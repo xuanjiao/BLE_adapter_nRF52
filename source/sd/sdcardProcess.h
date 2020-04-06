@@ -9,12 +9,9 @@
 #include "sensor_type.h"
 #include <vector>
 #include "ble_define.h"
-
+#include "global.h"
 using namespace std;
 
-static const char* FILE_SYSTEM_NAME = "fs";
-      
-// log file stores in file system        
 
 class SDcardProcess{
     typedef SDcardProcess Self;

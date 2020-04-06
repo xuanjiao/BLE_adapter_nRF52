@@ -9,10 +9,14 @@ enum Sensor_type{
     magnetometer = 2
 };
 
-static const char* sensor_types[] = {
+static const int SENSOR_TYPE_NUM = 3;
+
+static const char* sensor_types[SENSOR_TYPE_NUM] = {
     "unknow",
     "light",
     "magnetometer"
 };
+
+
 
 #endif

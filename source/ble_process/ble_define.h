@@ -127,4 +127,5 @@ static const ScanParams_t scan_params = {
     true    // active scanning flag.
 };
 
+
 #endif

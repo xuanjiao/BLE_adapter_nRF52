@@ -58,6 +58,11 @@
         "future": "cpp",
         "iostream": "cpp",
         "mutex": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "cerrno": "cpp",
+        "climits": "cpp",
+        "ios": "cpp",
+        "queue": "cpp",
+        "cstdbool": "cpp"
     }
 }

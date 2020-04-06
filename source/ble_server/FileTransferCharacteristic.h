@@ -24,7 +24,9 @@ class FileTransferCharacteristic : public GattCharacteristic{
             /* Descriptors */       NULL,
             /* Num descriptors */   0,
             /* variable len */      false
-            ){}
+            ){
+               
+            }
  
     private:
 

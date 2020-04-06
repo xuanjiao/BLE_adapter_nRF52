@@ -1,6 +1,51 @@
-2020/03/09-11:50:46.553 3a1c Reusing MANIFEST d:\mbed\acd_ble_sensor\.drawio-chrome\chrome-data\Default\Local Storage\leveldb/MANIFEST-000001
-2020/03/09-11:50:46.553 3a1c Recovering log #3
-2020/03/09-11:50:46.553 3a1c Reusing old log d:\mbed\acd_ble_sensor\.drawio-chrome\chrome-data\Default\Local Storage\leveldb/000003.log 
-2020/03/09-11:53:57.109 18a0 Level-0 table #5: started
-2020/03/09-11:53:57.134 18a0 Level-0 table #5: 15899 bytes OK
-2020/03/09-11:53:57.184 18a0 Delete type=0 #3
+2020/03/15-20:03:13.408 5354 Reusing MANIFEST d:\mbed\acd_ble_sensor\.drawio-chrome\chrome-data\Default\Local Storage\leveldb/MANIFEST-000001
+2020/03/15-20:03:13.408 5354 Recovering log #4
+2020/03/15-20:03:13.408 5354 Reusing old log d:\mbed\acd_ble_sensor\.drawio-chrome\chrome-data\Default\Local Storage\leveldb/000004.log 
+2020/03/15-20:06:52.911 4cc4 Level-0 table #8: started
+2020/03/15-20:06:52.941 4cc4 Level-0 table #8: 15817 bytes OK
+2020/03/15-20:06:52.990 4cc4 Delete type=0 #4
+2020/03/15-20:07:20.910 4cc4 Level-0 table #10: started
+2020/03/15-20:07:20.936 4cc4 Level-0 table #10: 15261 bytes OK
+2020/03/15-20:07:20.984 4cc4 Delete type=0 #7
+2020/03/15-20:07:27.235 4cc4 Level-0 table #12: started
+2020/03/15-20:07:27.272 4cc4 Level-0 table #12: 15490 bytes OK
+2020/03/15-20:07:27.321 4cc4 Delete type=0 #9
+2020/03/15-20:08:13.421 4cc4 Level-0 table #14: started
+2020/03/15-20:08:13.448 4cc4 Level-0 table #14: 15501 bytes OK
+2020/03/15-20:08:13.497 4cc4 Delete type=0 #11
+2020/03/15-20:09:13.420 4cc4 Level-0 table #16: started
+2020/03/15-20:09:13.451 4cc4 Level-0 table #16: 15779 bytes OK
+2020/03/15-20:09:13.476 4cc4 Delete type=0 #13
+2020/03/15-20:09:13.476 4cc4 Compacting 4@0 + 1@1 files
+2020/03/15-20:09:13.500 4cc4 Generated table #17@0: 4 keys, 16092 bytes
+2020/03/15-20:09:13.500 4cc4 Compacted 4@0 + 1@1 files => 16092 bytes
+2020/03/15-20:09:13.525 4cc4 compacted to: files[ 0 1 1 0 0 0 0 ]
+2020/03/15-20:09:13.526 4cc4 Delete type=2 #8
+2020/03/15-20:09:13.526 4cc4 Delete type=2 #10
+2020/03/15-20:09:13.526 4cc4 Delete type=2 #12
+2020/03/15-20:09:13.526 4cc4 Delete type=2 #14
+2020/03/15-20:09:13.526 4cc4 Delete type=2 #16
+2020/03/15-20:10:13.419 4cc4 Level-0 table #19: started
+2020/03/15-20:10:13.460 4cc4 Level-0 table #19: 16364 bytes OK
+2020/03/15-20:10:13.485 4cc4 Delete type=0 #15
+2020/03/15-20:11:13.421 4cc4 Level-0 table #21: started
+2020/03/15-20:11:13.446 4cc4 Level-0 table #21: 16771 bytes OK
+2020/03/15-20:11:13.471 4cc4 Delete type=0 #18
+2020/03/15-20:12:13.419 4cc4 Level-0 table #23: started
+2020/03/15-20:12:13.497 4cc4 Level-0 table #23: 17732 bytes OK
+2020/03/15-20:12:13.537 4cc4 Delete type=0 #20
+2020/03/15-20:13:13.420 4cc4 Level-0 table #25: started
+2020/03/15-20:13:13.459 4cc4 Level-0 table #25: 17546 bytes OK
+2020/03/15-20:13:13.483 4cc4 Delete type=0 #22
+2020/03/15-20:13:13.485 4cc4 Compacting 4@0 + 1@1 files
+2020/03/15-20:13:13.519 4cc4 Generated table #26@0: 4 keys, 17988 bytes
+2020/03/15-20:13:13.519 4cc4 Compacted 4@0 + 1@1 files => 17988 bytes
+2020/03/15-20:13:13.543 4cc4 compacted to: files[ 0 1 1 0 0 0 0 ]
+2020/03/15-20:13:13.544 4cc4 Delete type=2 #17
+2020/03/15-20:13:13.544 4cc4 Delete type=2 #19
+2020/03/15-20:13:13.544 4cc4 Delete type=2 #21
+2020/03/15-20:13:13.544 4cc4 Delete type=2 #23
+2020/03/15-20:13:13.544 4cc4 Delete type=2 #25
+2020/03/15-20:14:45.086 4cc4 Level-0 table #28: started
+2020/03/15-20:14:45.111 4cc4 Level-0 table #28: 18167 bytes OK
+2020/03/15-20:14:45.135 4cc4 Delete type=0 #24

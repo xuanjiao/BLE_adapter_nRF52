@@ -23,12 +23,12 @@ void SDcardProcess::record_beacon(Device_t &dev){
         strftime(complete_time,sizeof(complete_time),"%H:%M:%S %d-%m-%Y day of week %u",localtime(&current_time));
         strftime(date,sizeof(date),"%d-%m-%Y",localtime(&current_time));
 
-        // consruct file name "/<file system name>/<sensor type>_<first byte of address>_<date>"
-        sprintf(file_path,"/%s/%.2d_%s_%s.txt",
+        // consruct file name "/<file system name>/<sensor type>_<first byte of address>"
+        sprintf(file_path,"/%s/%s_%.2d.txt",
                     FILE_SYSTEM_NAME,   
-                    dev.address[0],                  // first byte address
-                    sensor_types[sensor_char->type], // sensor type
-                    date);
+                    sensor_types[sensor_char->type],// sensor type           
+                    dev.address[0]);  // first byte address
+        
         
         printf("log data in file[%s]:",file_path);
         for(int i = 0; i < sensor_char->len;i++){
