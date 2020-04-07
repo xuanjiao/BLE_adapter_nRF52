@@ -14,6 +14,7 @@
 #include "DiscoveredService.h"
 #include "DiscoveredCharacteristic.h"
 #include "CharacteristicDescriptorDiscovery.h"
+#include "global.h"
 
 static const int MAX_SENSOR_DATA_LEN = 3;
 

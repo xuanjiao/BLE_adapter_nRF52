@@ -15,9 +15,8 @@
 #include "SEGGER_RTT.h"
 #include "UUID.h"
 #include <mbed.h>
-#include "util.h"
+#include "global.h"
 #include <Span.h>
-#include <map>
 #include "ble_define.h"
 
 

@@ -1,7 +1,9 @@
 #include "ble_define.h"
+#include "global.h"
 #include "SEGGER_RTT.h"
 #include "BLEAdvScanProcess.h"
 #include "Callback.h"
+#include <map>
 
 static Sensor_char_uuid_t sensor_char_uuid_list[] = {
         // sensor type          sensor data uuid                            sensor config uuid

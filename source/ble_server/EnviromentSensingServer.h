@@ -6,13 +6,12 @@
 #include <GattCharacteristic.h>
 #include <GattService.h>
 #include "events/EventQueue.h"
-#include "SEGGER_RTT.h"
-#include "sensor_type.h"
 #include "UUID.h"
 #include "global.h"
 #include "SensorCharacteristic.h"
 #include "platform/SharedPtr.h"
 #include "FileTransferCharacteristic.h"
+#include "SEGGER_RTT.h"
 
 static const uint16_t uuids[] = {
     0xA000,     // unknown

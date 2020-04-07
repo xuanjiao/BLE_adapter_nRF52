@@ -89,19 +89,21 @@ void EnviromentSensingServer::create_file_transfer_characteristics()
         // if file name contain a sensor name
         for(int i = 0 ; i< SENSOR_TYPE_NUM ;i++){
             if(strstr(e.d_name,sensor_types[i] )&& i < MAX_CHARACTERISTIC_NUM){
-                _num_of_file++;
-                uint16_t uuid = file_char_uuid_base + (uint16_t)_num_of_file;
+                
+                uint16_t uuid = file_char_uuid_base + (uint16_t)_num_of_file+1;
                 
                 // construct file path
                 sprintf(file_buff[_num_of_file].path,"/%s/%s",FILE_SYSTEM_NAME,e.d_name);
 
-                printf("log file found: [%s] generate uuid = 0x%x\n",file_buff[_num_of_file].path,uuid);
-                
+                printf("log file no %d found: [%s] generate uuid = 0x%x\n",_num_of_file,file_buff[_num_of_file].path,uuid); 
+
                 uint8_t initial = (uint8_t)i;
                 // generate file transfer characteristic
-                file_chars_buff[_num_of_file-1] = new FileTransferCharacteristic(
+                file_chars_buff[_num_of_file] = new FileTransferCharacteristic(
                         uuid,
                         &initial);
+
+                _num_of_file++;
             }
         }  
 	}
@@ -150,9 +152,11 @@ void EnviromentSensingServer::when_receive_read_request(GattReadAuthCallbackPara
 void EnviromentSensingServer::when_data_read_by_client(const GattReadCallbackParams* params)
 {
     printf("data read by client. Connect handle %d data handle %d\n",params->connHandle,params->handle);
-    for(int i = 0; i < _num_of_file;i++){
+    for(int i = 0; i < _num_of_file ;i++){
+
+        // find which characteristic is read by client
         if(params->handle == file_chars_buff[i]->getValueHandle()){
-            
+            printf("read data from file %d [%s]...\n",i,file_buff[i].path);
             FILE *fp;
             // find respond file for this characteristic and open it
             fp = fopen(file_buff[i].path,"r");
@@ -177,11 +181,6 @@ void EnviromentSensingServer::when_data_read_by_client(const GattReadCallbackPar
     
 }
 
-// void EnviromentSensingServer::updateFileCharacteristicValue(const ble::connection_handle_t connection_handle,
-//                  file_index,const GattAttribute::Handle_t data_handle, const uint8_* value, uint16_t size)
-// {
-//     _gattServer->write(connection_handle,data_handle, value,size);
-// }
 
 // Update light value in ldr gatt characteristic.
 void EnviromentSensingServer::update_sensor_value(Sensor_type type,uint8_t value,char* time){
