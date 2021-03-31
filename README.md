@@ -34,23 +34,11 @@ git clone https://github.com/xuanjiao/ble_gateway.git
 
 1.  Change the system variable PATH for make tool.
 
-2.  Import the project to VS Code.
+2. Build the application and generate the .hex file.
 
-3. Build the application in VS code using mBed and generate the .hex file.
+3. Use Jlink FlashLite to erase the MCU and flash the .hex file.
 
-4. Use Jlink FlashLite to erase the MCU and flash the .hex file.
+4. Use Android App nRF Connect scan BLE devices
 
-5. Use Android App nRF Connect scan BLE devices
-
-6.  Use RTT Viewer to monitor information from MCU.
-
-
-## Sensor information
-
-[CC2560 sensorTag](https://processors.wiki.ti.com/index.php/CC2650_SensorTag_User's_Guide)
-contains a light sensor to measure the light and a movement sensor to detect the door status (open and close)
-
--   Light sensor [OPT3001](http://www.ti.com/lit/ds/symlink/opt3001.pdf)
-
--   Movement sensor [MPU-9250](https://invensense.tdk.com/products/motion-tracking/9-axis/mpu-9250/)
+5.  Use RTT Viewer to monitor information from MCU.
 
