@@ -54,8 +54,3 @@ contains a light sensor to measure the light and a movement sensor to detect the
 
 -   Movement sensor [MPU-9250](https://invensense.tdk.com/products/motion-tracking/9-axis/mpu-9250/)
 
-## BLE adapter workflow 
-
-The BLE adapter has three modes: advertise, scan, connect.
-
-![workflow_bs](./drawio_assets/work_flow_bs.png)
